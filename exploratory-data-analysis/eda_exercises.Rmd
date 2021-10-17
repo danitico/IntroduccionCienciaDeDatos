@@ -350,6 +350,13 @@ quantile(iris$Petal.Width)
 ggplot(iris, aes(x=Species, y=Petal.Width)) + geom_boxplot() + labs(y = "Petal Width")
 ```
 
+**Crea los cuartiles para cada tipo de iris y represéntalos en un plot como líneas cada una de un color**
+
+```{r}
+
+```
+
+
 
 **Crea los boxplot de la longitud del pétalo en función de la especie de Iris.**
 
