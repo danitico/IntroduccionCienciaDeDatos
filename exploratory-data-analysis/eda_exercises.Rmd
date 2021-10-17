@@ -8,6 +8,177 @@ output: html_notebook
 **Descargate el  dataset hip con el siguiente commando**
 
 ```{r}
-hip <- read.table("http://astrostatistics.psu.edu/datasets/HIP_star.dat", header=T, fill=T)
+# It does not work in some machines due to ssl certificates
+hip <- read.table("https://astrostatistics.psu.edu/datasets/HIP_star.dat", header=T, fill=T)
+
+hip <- read.table("HIP_star.dat", header=T, fill=T)
 ```
+
+**Una vez descargado comprueba la dimensión y los nombres de las columnas del dataset. ¿Qué dimensión tiene? ¿qué tipo de datos alberga? (e.g. 4 variables numéricas continuas)**
+
+El dataset tiene 9 columnas (variables) con un total de 2719 observaciones. Los nombres de las columnas son: "HIP", "Vmag", "RA", "DE", "Plx", "pmRA", "pmDE", "e_Plx" y "B.V".
+
+HIP = Hipparcos star number
+Vmag = Visual band magnitude.  This is an inverted logarithmic measure of brightness 
+RA = Right Ascension (degrees), positional coordinate in the sky equivalent to longitude on the Earth
+DE = Declination (degrees), positional coordinate in the sky equivalent to latitude on the Earth
+Plx = Parallactic angle (mas = milliarcsseconds).  1000/Plx gives the distance in parsecs (pc)
+pmRA = Proper motion in RA (mas/yr).  RA component of the motion of the star across the sky 
+pmDE = Proper motion in DE (mas/yr). DE component of the motion of the star across the sky
+e_Plx = Measurement error in Plx (mas)
+B-V = Color of star (mag)
+
+La variable HIP se comporta como un índice de las distintas observaciones (variable categórica), tal y como explica la descripción del atributo. Cualquier medida que se haga sobre la variable HIP no aportará ningún valor. El resto de las variables son numéricas continuas
+
+
+```{r}
+# Dimensiones del dataset
+dim(hip)
+
+# Nombres de las columnas
+colnames(hip)
+```
+
+
+**Calcula las tendencias centrales de todos los datos del dataset (mean, media)**
+
+```{r}
+# Medias de todas las variables
+apply(hip, 2, mean, na.rm = T)
+# Medianas de todas las variables
+apply(hip, 2, median, na.rm = T)
+```
+
+**Haz lo mismo para las medidas de dispersión mínimo y máximo. ¿Seria posible hacerlo con un único comando?¿Que hace la función range()?**
+
+La función range devuelve el máximo y el mínimo de una variable
+
+```{r}
+apply(hip, 2, range, na.rm = T)
+```
+
+**Sin embargo las medidas mas populares de dispersión son la varianza (var()), su desviación standard (sd()) y la desviación absoluta de la mediana mad(). Calcula estas medidas para los valores de la variable RA**
+
+```{r}
+# Varianza
+var(hip$RA)
+# Desviación típica
+sd(hip$RA)
+# Desviación absoluta de la mediana
+mad(hip$RA)
+```
+
+
+**Imagina que quieres calcular dos de estos valores de una sola vez. ¿Te serviría este código?**
+
+El código si funciona. Devuelve datos correctos
+
+```{r}
+f = function(x) {c(median(x), mad(x))}
+f(hip$RA)
+```
+
+**Implementa estos cálculos para RA usando dplyr de tidyverse**
+
+```{r}
+install.packages("tidyverse")
+library("dplyr")
+```
+
+```{r}
+hip %>% summarise(median=median(RA, na.rm = T), mad=mad(RA, na.rm = T))
+```
+
+**¿Cuál sería el resultado de aplicar apply(hip,2,f)?**
+Devuelve la mediana y la desviación absoluta de la mediana de todas las variables
+
+
+```{r}
+apply(hip, 2, f)
+```
+
+**Vamos a medir la dispersión de la muestra utilizando el concepto de cuartiles. El percentil 90 es aquel dato que excede en un 10% a todos los demás datos. El cuartil (quantile) es el mismo concento, solo que habla de proporciones en vez de porcentajes. De forma que el percentil 90 es lo mismo que el cuartil 0.90. La mediana “median” de un dataset es el valor más central, en otras palabras exactamente la mitad del dataset excede la media. Calcula el cuartil .10 y .50 para la columna RA del dataset hip. Sugerencia: quantile()**
+
+```{r}
+quantile(hip$RA, probs = c(0.1, 0.5), na.rm = T)
+```
+
+**Los cuantiles 0.25 y 0.75 se conocen como el  “first quartile” o Q1 y el “third quartile” o Q3, respectivamente. Calcula los cuatro cuartiles para RA con un único comando.**
+
+```{r}
+quantile(hip$RA, probs = c(0.25, 0.5, 0.75), na.rm = T)
+```
+
+
+**Otra medida de dispersion es la diferencia entre el primer y el tercer cuartil conocida como rango intercuartil (IQR) Inter Quantile Range. ¿Obtienes ese valor con la función summary()?**
+
+La función summary no devuelve el IQR. Para calcularlo, hay que utilizar la función IQR()
+
+```{r}
+IQR(hip$RA, na.rm = T)
+```
+
+
+**Hasta ahora has ignorado la presencia de  valores perdidos NA. La función any() devuelve TRUE si se encuentra al menos un TRUE en el vector que damos como argumento. Su combinación con is.na es muy útil. ¿qué obtienes cuando ejecutas el siguiente comando? ¿Cómo lo interpretas?**
+
+Devuelve un vector de booleanos asociados a cada variable en el que el valor False significa que no hay valores perdidos mientras que true significa que hay valores perdidos.
+En este caso, sabemos que la variable B.V tiene al menos un valor perdido
+
+```{r}
+hasNA = function(x) any(is.na(x)) 
+apply(hip,2,hasNA)
+```
+
+**Prueba a ejecutar el siguiente comando**
+
+Al haber valores perdidos, la función min en esa situación devuelve NA
+
+```{r}
+min(hip$B.V)
+```
+
+
+
+**Como has observado  nos devuelve NA para toda la columna,  normalmente querríamos poder usar la función sobre el resto de datos que no son NA: Para ello podemos utilizar la función na.omit. ¿Que ocurre cuando lo hacemos?. Usando apply calcula la media para hip. Intenta calcular la media de forma que solo cambie la de B.V cuando ignores los valores NA.**
+
+Cuando se aplica na.omit al dataset, se borran aquellas observaciones que contienen valores perdidos
+
+
+```{r}
+hip1 <- na.omit(hip)
+
+# Media de las variables
+apply(hip, 2, mean, na.rm = T)
+```
+
+**Obten una idea aproximada de tus datos mediante la creación de un boxplot del hip dataset**
+
+Quitamos la variable HIP ya que es una variable categórica que actúa como un índice. Como se puede ver, las variables más dispersas son pmDE y pmRA.
+
+```{r}
+install.packages("ggplot2")
+library("ggplot2")
+library("tidyr")
+
+hip1 %>% gather("Variables", "Values", 2:9) %>% ggplot(., aes(x=Variables, y=Values)) + geom_boxplot(outlier.colour = NULL)
+```
+
+
+**Crea un scatterplot que te compare los valores de RA y DE. Representa los puntos con el símbolo ‘.’ Y que estos puntos sean de color rojo si DE excede de 0. Sugerencia: puedes usar dplyr/tidyverse o Rbase ifelse()**
+
+
+```{r}
+hip1 %>% mutate(Color=ifelse(DE > 0, "red", "black")) %>% ggplot(., aes(x=RA, y=DE)) + geom_point(aes(color = Color)) + scale_color_manual(values = c("red" = "red", "black" = "black"))
+```
+
+
+**Haz un scatterplot de RA y pmRA. ¿Ves algún patrón?**
+
+```{r}
+hip1 %>%ggplot(., aes(x=RA, y=pmRA)) + geom_point()
+```
+
+
+
+
 
