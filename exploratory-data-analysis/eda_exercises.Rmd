@@ -1,0 +1,13 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+
+# Hip Dataset
+
+**Descargate el  dataset hip con el siguiente commando**
+
+```{r}
+hip <- read.table("http://astrostatistics.psu.edu/datasets/HIP_star.dat", header=T, fill=T)
+```
+
