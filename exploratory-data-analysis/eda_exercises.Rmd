@@ -82,7 +82,7 @@ f(hip$RA)
 
 ```{r}
 install.packages("tidyverse")
-library("dplyr")
+library("tidyverse")
 ```
 
 ```{r}
@@ -174,11 +174,202 @@ hip1 %>% mutate(Color=ifelse(DE > 0, "red", "black")) %>% ggplot(., aes(x=RA, y=
 
 **Haz un scatterplot de RA y pmRA. ¿Ves algún patrón?**
 
+Vemos que las variables están relacionadas de forma no lineal. La variable pmRA es más propensa a tomar valores cercanos al eje X caundo se acerca a la mediana de la variable RA. Mientras que cuando nos alejamos de la mediana de RA, pmRA por lo general toma valores mucho más mayores que 0.
+
 ```{r}
 hip1 %>%ggplot(., aes(x=RA, y=pmRA)) + geom_point()
 ```
 
 
+**En vez de crear los plots por separado para cada par de columnas, hazlos con un solo comando con el scatterplot matrix**
 
+```{r}
+pairs(hip[, 2:9])
+```
+
+**Vamos a seleccionar las estrellas Hyadas del dataset aplicando los siguientes filtros. Crea un nuevo dataset con la aplicación de estos filtro. El Nuevo dataset se llama hyades. ¿Que dimensiones tiene? Grafica un scatterplot de Vmag vs B.V**
+
+En este caso el nuevo dataset solo tiene 88 observaciones
+
+
+```{r}
+hyades <- hip %>% filter(
+  between(RA, 50, 100),
+  between(DE, 0, 25),
+  between(pmRA, 90, 130),
+  between(pmDE, -60, -10),
+  e_Plx < 5,
+  Vmag > 4 | B.V < 0.2
+)
+
+# Dimensiones del nuevo dataset
+dim(hyades)
+
+hyades %>% ggplot(., aes(x=Vmag, y=B.V)) + geom_point()
+```
+
+
+# InsectSprays dataset
+
+**El dataset “InsectSprays” está incluido en la libreria de R “datasets”. Contiene el conteo de insectos extraidos de diferentes zonas agrícolas tratadas de forma experimental con diferentes insecticidas. Haz un boxplot para determiner que insecticida parece ser el más efectivo.**
+
+Teniendo en cuenta el box plot generado, los insecticidas A, B y F tienen una gran dispersión (Además de cubir un número mayor de insectos) mientras que los insecticidas C, D y E tienen menos dispersión y cubren un rango con un número menor de insectos.
+Si tuvieramos que escoger el mejor insecticida, habría que investigar los insecticidas C, D y E. Si nos fijamos en el spray D, se puede observar un outlier máximo que se coloca en el rango en el que se encuentran los "peores sprays", por lo que si se quiere evitar un spray en el que algunos momentos no es efectivo, se descartaría el D.
+
+Mirando los sprays restantes, en este caso el spray C y E, el spray C es el único que consigue eliminar todos los insectos aunque tiene un outlier máximo algo alejado del Q3. Mientras tanto el spray E no contiene el outlier aunque no es capaz de reducir a cero el número de insectos.
+
+En este caso, se elegiría el spray C ya que es el único que consigue en reducir a cero los insectos aunque alguna vez que otra se menos eficiente que lo indicado.
+
+```{r}
+library(datasets)
+
+InsectSprays %>% ggplot(., aes(x=spray, y=count)) + geom_boxplot() + scale_y_continuous(breaks = seq(0, 30, 2))
+```
+
+
+# Carseats datasets
+
+**Instala la library(ISLR), vamos a trabajar con el dataset Carseats. Si vas a usar dplyr puedes inspeccionar el paquete “dlookr” **
+
+```{r}
+install.packages("ISLR")
+library(ISLR)
+library(moments)
+```
+
+**Encuentra que variables tienen skewness**
+
+Para calcular el skewness, se han quitado las variables que son categóricas, ya que en ellas no se puede calcular
+
+```{r}
+colnames(Carseats)
+
+variablesWithSkewness <- Carseats %>% select(!c(ShelveLoc, Urban, US)) %>% summarise(Variables=colnames(.), Skewness=skewness(.))
+variablesWithSkewness
+```
+
+**Genera dos listas, una de variables con skewness a la derecha y otra con skewness a la izquierda**
+
+```{r}
+variablesWithPositiveSkewness <- variablesWithSkewness %>% filter(Skewness > 0)
+variablesWithNegativeSkewness <- variablesWithSkewness %>% filter(Skewness < 0)
+variablesWithPositiveSkewness
+variablesWithNegativeSkewness
+```
+
+
+**Averigua que variables no están distribuidas de forma normal, crea gráficos que lo prueben**
+
+Las variables Income, Advertising, Population, Age y Education no se distribuyen de forma normal
+
+```{r}
+ggplot(Carseats, aes(x=Sales)) + geom_histogram(bins = 25)
+shapiro.test(Carseats$Sales)
+
+ggplot(Carseats, aes(x=CompPrice)) + geom_histogram(bins = 25)
+shapiro.test(Carseats$CompPrice)
+
+ggplot(Carseats, aes(x=Income)) + geom_histogram(bins = 25)
+shapiro.test(Carseats$Income)
+
+ggplot(Carseats, aes(x=Advertising)) + geom_histogram(bins = 10)
+shapiro.test(Carseats$Advertising)
+
+ggplot(Carseats, aes(x=Population)) + geom_histogram(bins = 25)
+shapiro.test(Carseats$Population)
+
+ggplot(Carseats, aes(x=Price)) + geom_histogram(bins = 30)
+shapiro.test(Carseats$Price)
+
+ggplot(Carseats, aes(x=Age)) + geom_histogram(bins = 25)
+shapiro.test(Carseats$Age)
+
+ggplot(Carseats, aes(x=Education)) + geom_histogram(bins = 8)
+shapiro.test(Carseats$Education)
+```
+
+**Encuentra que variables están correlaccionadas positiva y cuales negativamente. Crea el gráfico apropiado.**
+
+Las variables que están significativamente correlaccionadas de manera positiva son Price y CompPrice. Las que están correlaccionadas negativamente son Sales y Price (Si los precios bajan, las ventas suben ligeramente). 
+
+```{r}
+install.packages("corrplot")
+library(corrplot)
+
+correlation <- Carseats %>% select(!c(ShelveLoc, Urban, US)) %>% cor(.)
+
+corrplot(correlation, method = "number")
+```
+
+
+# Iris dataset
+
+**Inspecciona las primeras filas del dataset y calcula el summary() del mismo con cada atributo del dataset**
+
+```{r}
+head(iris)
+
+summary(iris$Sepal.Length)
+summary(iris$Sepal.Width)
+summary(iris$Petal.Length)
+summary(iris$Petal.Width)
+```
+
+
+**Crea un histograma de petal.width , teniendo en cuenta que el numero de bins es variable fija este a 9. Añádele color y nombres al eje x "Petal Width"y al gráfico dale el nombre de  "Histogram of Petal Width". Crea un histograma para cada variable**
+
+```{r}
+ggplot(iris, aes(x=Petal.Width)) + geom_histogram(bins = 9, fill = "purple", color = "black") + labs(title="Histogram of Petal Width", x="Petal Width")
+```
+
+```{r}
+ggplot(iris, aes(x=Petal.Length)) + geom_histogram(bins = 9, fill = "purple", color = "black") + labs(title="Histogram of Petal Length", x="Petal Length")
+```
+
+```{r}
+ggplot(iris, aes(x=Sepal.Width)) + geom_histogram(bins = 9, fill = "purple", color = "black") + labs(title="Histogram of Sepal Width", x="Sepal Width")
+```
+
+```{r}
+ggplot(iris, aes(x=Sepal.Length)) + geom_histogram(bins = 9, fill = "purple", color = "black") + labs(title="Histogram of Sepal Length", x="Sepal Length")
+```
+
+**Crea los cuartiles del dataset**
+
+```{r}
+quantile(iris$Sepal.Length)
+quantile(iris$Sepal.Width)
+quantile(iris$Petal.Length)
+quantile(iris$Petal.Width)
+```
+
+
+**Representa en un boxplot la variable de ancho de hoja dependiendo del tipo de hoja que tengan**
+
+```{r}
+ggplot(iris, aes(x=Species, y=Petal.Width)) + geom_boxplot() + labs(y = "Petal Width")
+```
+
+
+**Crea los boxplot de la longitud del pétalo en función de la especie de Iris.**
+
+```{r}
+ggplot(iris, aes(x=Species, y=Petal.Length)) + geom_boxplot() + labs(y = "Petal Length")
+```
+
+**Compara con scatter plots las variables entre sí.**
+
+```{r}
+pairs(~ Sepal.Length + Sepal.Width + Petal.Length + Petal.Width, data = iris , col = iris$Species, oma=c(3, 3, 3, 15))
+par(xpd = T)
+legend("bottomright", fill = unique(iris$Species), legend = c( levels(iris$Species)))
+```
+
+**Crea una nueva columna llamada proporción que es el ratio entre Sepal.Length y Sepal.Width**
+
+
+```{r}
+iris %>% mutate("Proporción"=Sepal.Length/Sepal.Width)
+```
 
 
