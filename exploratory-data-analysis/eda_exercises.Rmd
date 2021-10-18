@@ -160,7 +160,9 @@ install.packages("ggplot2")
 library("ggplot2")
 library("tidyr")
 
-hip1 %>% gather("Variables", "Values", 2:9) %>% ggplot(., aes(x=Variables, y=Values)) + geom_boxplot(outlier.colour = NULL)
+hip1 %>% gather("Variables", "Values", 2:9) %>% ggplot(., aes(y=Values)) + geom_boxplot(outlier.colour = NULL) + facet_wrap(
+ ~ Variables, scales = "free" 
+)
 ```
 
 
@@ -263,28 +265,30 @@ variablesWithNegativeSkewness
 Las variables Income, Advertising, Population, Age y Education no se distribuyen de forma normal
 
 ```{r}
-ggplot(Carseats, aes(x=Sales)) + geom_histogram(bins = 25)
+Carseats %>% gather("Variables", "Values", c(1:6, 8, 9)) %>% ggplot(., aes(x=Values)) + geom_histogram() + facet_wrap(~ Variables, scales = "free")
+
+# ggplot(Carseats, aes(x=Sales)) + geom_histogram(bins = 25)
 shapiro.test(Carseats$Sales)
 
-ggplot(Carseats, aes(x=CompPrice)) + geom_histogram(bins = 25)
+#ggplot(Carseats, aes(x=CompPrice)) + geom_histogram(bins = 25)
 shapiro.test(Carseats$CompPrice)
 
-ggplot(Carseats, aes(x=Income)) + geom_histogram(bins = 25)
+#ggplot(Carseats, aes(x=Income)) + geom_histogram(bins = 25)
 shapiro.test(Carseats$Income)
 
-ggplot(Carseats, aes(x=Advertising)) + geom_histogram(bins = 10)
+#ggplot(Carseats, aes(x=Advertising)) + geom_histogram(bins = 10)
 shapiro.test(Carseats$Advertising)
 
-ggplot(Carseats, aes(x=Population)) + geom_histogram(bins = 25)
+#ggplot(Carseats, aes(x=Population)) + geom_histogram(bins = 25)
 shapiro.test(Carseats$Population)
 
-ggplot(Carseats, aes(x=Price)) + geom_histogram(bins = 30)
+#ggplot(Carseats, aes(x=Price)) + geom_histogram(bins = 30)
 shapiro.test(Carseats$Price)
 
-ggplot(Carseats, aes(x=Age)) + geom_histogram(bins = 25)
+#ggplot(Carseats, aes(x=Age)) + geom_histogram(bins = 25)
 shapiro.test(Carseats$Age)
 
-ggplot(Carseats, aes(x=Education)) + geom_histogram(bins = 8)
+#ggplot(Carseats, aes(x=Education)) + geom_histogram(bins = 8)
 shapiro.test(Carseats$Education)
 ```
 
@@ -378,5 +382,67 @@ legend("bottomright", fill = unique(iris$Species), legend = c( levels(iris$Speci
 ```{r}
 iris %>% mutate("Proporción"=Sepal.Length/Sepal.Width)
 ```
+
+
+# Swiss dataset
+
+**El conjunto de datos “swiss” contiene una medida estandarizada de fecundidad y varios indicadores socioeconómicos para cada una de las 47 provincias francófonas de Suiza.**
+
+**¿Qué diagrama dibujaría para mostrar la distribución de todos los valores? ¿Qué conclusiones sacarías?**
+
+Explicacion de histograma
+
+**Dibuje gráficos para cada variable. ¿Qué puede concluir de las distribuciones con respecto a su forma y posibles valores atípicos?**
+
+```{r}
+swiss %>% gather("Variables", "Values", 1:6) %>% ggplot(., aes(x=Values)) + geom_histogram(bins = 5) + facet_wrap(~ Variables, scales = "free")
+
+shapiro.test(swiss$Agriculture)
+shapiro.test(swiss$Catholic)
+shapiro.test(swiss$Education)
+shapiro.test(swiss$Examination)
+shapiro.test(swiss$Fertility)
+shapiro.test(swiss$Infant.Mortality)
+
+```
+
+
+```{r}
+swiss %>% gather("Variables", "Values", 1:6) %>% ggplot(., aes(y=Values)) + geom_boxplot() + facet_wrap(~ Variables, scales = "free")
+```
+
+# Dibuja un diagrama de dispersión de Fertilidad frente a % Catholic. ¿Qué tipo de áreas tienen las tasas de fertilidad más bajas?
+
+```{r}
+swiss %>% ggplot(., aes(x=Fertility, y=Catholic)) + geom_point()
+
+swiss %>% filter(Fertility < 50)
+swiss %>% select(Infant.Mortality) %>% arrange(Infant.Mortality)
+```
+
+**¿Qué tipo de relación existe entre las variables Educación y Agricultura?**
+
+```{r}
+swiss %>% ggplot(., aes(x=Education, y=Agriculture)) + geom_point()
+```
+
+
+# Extracat dataset
+
+**El conjunto de datos de aceites de oliva es bien conocido y se puede encontrar en varios paquetes, por ejemplo, como aceitunas en extracat.. La fuente original de los datos es el artículo [Forina et al., 1983].**
+
+```{r}
+install.packages("dslabs")
+library(dslabs)
+```
+
+
+**Dibuje un scatterplot  de las ocho variables continuas. ¿Cuáles de los ácidos grasos están fuertemente asociados positivamente y cuáles fuertemente asociados negativamente?**
+
+```{r}
+olive %>% select(-c(1, 2)) %>% pairs(.)
+```
+
+**¿Hay valores atípicos u otras características que valga la pena mencionar?**
 
 
