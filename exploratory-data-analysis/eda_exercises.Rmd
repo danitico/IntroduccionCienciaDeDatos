@@ -179,7 +179,7 @@ hip1 %>% mutate(Color=ifelse(DE > 0, "red", "black")) %>% ggplot(., aes(x=RA, y=
 Vemos que las variables están relacionadas de forma no lineal. La variable pmRA es más propensa a tomar valores cercanos al eje X caundo se acerca a la mediana de la variable RA. Mientras que cuando nos alejamos de la mediana de RA, pmRA por lo general toma valores mucho más mayores que 0.
 
 ```{r}
-hip1 %>%ggplot(., aes(x=RA, y=pmRA)) + geom_point()
+hip1 %>% ggplot(., aes(x=RA, y=pmRA)) + geom_point()
 ```
 
 
@@ -417,7 +417,6 @@ swiss %>% gather("Variables", "Values", 1:6) %>% ggplot(., aes(y=Values)) + geom
 swiss %>% ggplot(., aes(x=Fertility, y=Catholic)) + geom_point()
 
 swiss %>% filter(Fertility < 50)
-swiss %>% select(Infant.Mortality) %>% arrange(Infant.Mortality)
 ```
 
 **¿Qué tipo de relación existe entre las variables Educación y Agricultura?**
@@ -439,10 +438,64 @@ library(dslabs)
 
 **Dibuje un scatterplot  de las ocho variables continuas. ¿Cuáles de los ácidos grasos están fuertemente asociados positivamente y cuáles fuertemente asociados negativamente?**
 
+Positivamente: (pamitic, palmitoleic)
+Negativamente: (Palmitic, oleic) (palmitoleic, oleic) (linoleic, oleic)
+
 ```{r}
 olive %>% select(-c(1, 2)) %>% pairs(.)
 ```
 
 **¿Hay valores atípicos u otras características que valga la pena mencionar?**
 
+La relación de todos los acidos con el acido eicosenoic al igual que la de todos los acidos (menos el eicosenoic) con linoleic
+
+
+# HSAUR2 dataset
+
+**El conjunto de datos se llama Lanza del paquete HSAUR2. **
+
+```{r}
+install.packages("HSAUR2")
+library(HSAUR2)
+```
+
+
+**Se informan los datos de cuatro estudios. Dibuje un diagrama para mostrar si los cuatro estudios son igualmente grandes.**
+
+```{r}
+Lanza %>% ggplot(., aes(x=study)) + geom_bar() + labs(y = "Number of observations", x="Study")
+```
+
+**El resultado se mide por la clasificación de la variable con puntuaciones de 1 (mejor) a 5 (peor). ¿Cómo describirías la distribución?**
+
+Mirar test de normalidad
+
+
+```{r}
+Lanza %>% ggplot(., aes(x=classification)) + geom_bar() + labs(y = "Count", x="Score")
+```
+
+
+#vcdExtra dataset
+
+**El paquete vcdExtra incluye datos de un viejo estudio de cáncer de mama sobre la supervivencia o muerte de 474 pacientes.**
+
+```{r}
+install.packages("vcdExtra")
+library(vcdExtra)
+cancer <- as.data.frame(Cancer)
+```
+
+**Convierta los datos en un data frame y dibuje gráficos para comparar las tasas de supervivencia, primero, por grado de malignidad y, en segundo lugar, por centro de diagnóstico.**
+
+```{r}
+mosaic(~ Grade + Survival, data=cancer, highlighting="Survival", highlighting_fill = c("red", "green"))
+mosaic(~ Center + Survival, data=cancer, highlighting="Survival", highlighting_fill = c("red", "green"))
+```
+
+**¿Qué diagrama dibujaría para comparar las tasas de supervivencia tanto por grado de malignidad como por centro de diagnóstico? ¿Importa el orden de las variables explicativas?**
+
+```{r}
+mosaic(~ Center+ Grade + Survival, data=cancer, highlighting="Survival", highlighting_fill = c("red", "green"))
+```
 
