@@ -357,7 +357,7 @@ ggplot(iris, aes(x=Species, y=Petal.Width)) + geom_boxplot() + labs(y = "Petal W
 **Crea los cuartiles para cada tipo de iris y represéntalos en un plot como líneas cada una de un color**
 
 ```{r}
-
+iris %>% gather(ind, values, 1:4) %>% ggplot(., aes(x=ind, y=values)) + geom_boxplot() + facet_wrap(~ Species, scales = "free")
 ```
 
 
@@ -390,20 +390,26 @@ iris %>% mutate("Proporción"=Sepal.Length/Sepal.Width)
 
 **¿Qué diagrama dibujaría para mostrar la distribución de todos los valores? ¿Qué conclusiones sacarías?**
 
-Explicacion de histograma
+El mejor diagrama para comprobar la distribución de una variabl numérica es un histograma. Con el histograma podemos ver las frecuencias de cada valor en esa variable
 
 **Dibuje gráficos para cada variable. ¿Qué puede concluir de las distribuciones con respecto a su forma y posibles valores atípicos?**
 
-```{r}
-swiss %>% gather("Variables", "Values", 1:6) %>% ggplot(., aes(x=Values)) + geom_histogram(bins = 5) + facet_wrap(~ Variables, scales = "free")
+Teniendo en cuenta los gráficos de cada variables, se puede afirmar que las variables Agriculture, Examination, Fertility e Infant.Mortality siguen una distribución normal. Mientras que las variables que Catholic y Education no siguen una distribución normal. Estas afirmaciones se puede confirmar con los resultados del test de shapiro.
 
+Teniendo en cuenta los box plots de cada variable, se puede observar que las 47 provincias de habla francesa son muy heterogéneas respecto a la religión. También llama la atención cómo ciertas provincias destacan en educación (Outliers).
+
+```{r}
 shapiro.test(swiss$Agriculture)
 shapiro.test(swiss$Catholic)
 shapiro.test(swiss$Education)
 shapiro.test(swiss$Examination)
 shapiro.test(swiss$Fertility)
 shapiro.test(swiss$Infant.Mortality)
+```
 
+
+```{r}
+swiss %>% gather("Variables", "Values", 1:6) %>% ggplot(., aes(x=Values)) + geom_histogram(bins = 5) + facet_wrap(~ Variables, scales = "free")
 ```
 
 
@@ -411,7 +417,7 @@ shapiro.test(swiss$Infant.Mortality)
 swiss %>% gather("Variables", "Values", 1:6) %>% ggplot(., aes(y=Values)) + geom_boxplot() + facet_wrap(~ Variables, scales = "free")
 ```
 
-# Dibuja un diagrama de dispersión de Fertilidad frente a % Catholic. ¿Qué tipo de áreas tienen las tasas de fertilidad más bajas?
+**Dibuja un diagrama de dispersión de Fertilidad frente a % Catholic. ¿Qué tipo de áreas tienen las tasas de fertilidad más bajas?**
 
 ```{r}
 swiss %>% ggplot(., aes(x=Fertility, y=Catholic)) + geom_point()
@@ -420,6 +426,8 @@ swiss %>% filter(Fertility < 50)
 ```
 
 **¿Qué tipo de relación existe entre las variables Educación y Agricultura?**
+
+Las variables educación y agricultura son inversamente proporcionales. En provincias en las que más hombres se dedican a la agricultura, el nivel de educación es más bajo.
 
 ```{r}
 swiss %>% ggplot(., aes(x=Education, y=Agriculture)) + geom_point()
@@ -438,8 +446,8 @@ library(dslabs)
 
 **Dibuje un scatterplot  de las ocho variables continuas. ¿Cuáles de los ácidos grasos están fuertemente asociados positivamente y cuáles fuertemente asociados negativamente?**
 
-Positivamente: (pamitic, palmitoleic)
-Negativamente: (Palmitic, oleic) (palmitoleic, oleic) (linoleic, oleic)
+Las variables asociadas positivamente son (pamitic, palmitoleic).
+Las variables asociadas negativamente son (Palmitic, oleic), (palmitoleic, oleic) y (linoleic, oleic).
 
 ```{r}
 olive %>% select(-c(1, 2)) %>% pairs(.)
@@ -447,7 +455,7 @@ olive %>% select(-c(1, 2)) %>% pairs(.)
 
 **¿Hay valores atípicos u otras características que valga la pena mencionar?**
 
-La relación de todos los acidos con el acido eicosenoic al igual que la de todos los acidos (menos el eicosenoic) con linoleic
+La relación de todos los acidos con el acido eicosenoic al igual que la de todos los acidos (menos el eicosenoic) con linoleic.
 
 
 # HSAUR2 dataset
@@ -468,11 +476,13 @@ Lanza %>% ggplot(., aes(x=study)) + geom_bar() + labs(y = "Number of observation
 
 **El resultado se mide por la clasificación de la variable con puntuaciones de 1 (mejor) a 5 (peor). ¿Cómo describirías la distribución?**
 
-Mirar test de normalidad
+La variable distribución no sigue una distribución normal.
 
 
 ```{r}
 Lanza %>% ggplot(., aes(x=classification)) + geom_bar() + labs(y = "Count", x="Score")
+
+shapiro.test(as.numeric(Lanza$classification))
 ```
 
 
@@ -495,7 +505,26 @@ mosaic(~ Center + Survival, data=cancer, highlighting="Survival", highlighting_f
 
 **¿Qué diagrama dibujaría para comparar las tasas de supervivencia tanto por grado de malignidad como por centro de diagnóstico? ¿Importa el orden de las variables explicativas?**
 
+Dibujaría un diagrama de tipo mosaico en el que se puede ver las 3 variables categóricas de una sola vez. No influye el orden de las variables categóricas.
+
 ```{r}
 mosaic(~ Center+ Grade + Survival, data=cancer, highlighting="Survival", highlighting_fill = c("red", "green"))
 ```
+
+# Crabs dataset
+
+```{r}
+install.packages("MASS")
+library(MASS)
+```
+
+**Los autores inicialmente se transforman a una escala logarítmica y luego escriben que: “The data are very highly correlated and scatterplot matrices and brush plots [i.e. interactive graphics] are none too revealing.”. Utilizando gráficos generales, comente si la transformación logaritmica fue una buena idea y si está de acuerdo con su afirmación sobre las correlaciones.**
+
+Los autores están en lo cierto. Las variables están altamente correladas y la matriz scatterplot no muestra nada interesante.
+
+```{r}
+# Matriz de scatter plots
+crabs %>% select(-c(1:3)) %>% log10(.) %>% pairs(.)
+```
+
 
