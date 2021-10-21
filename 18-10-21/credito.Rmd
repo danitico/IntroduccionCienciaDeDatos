@@ -1,0 +1,81 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+
+
+```{r}
+library(tidyverse)
+```
+
+
+```{r}
+credit <- read_csv("Credit_Card_Clients.csv", skip = 1)
+```
+
+```{r}
+colnames(credit)
+```
+
+```{r}
+dim(credit)
+```
+
+```{r}
+isNa <- function(x) {
+    any(is.na(x))
+}
+
+credit %>% apply(., 2, isNa)
+```
+
+
+```{r}
+credit %>% apply(., 2, class)
+```
+
+```{r}
+summary(credit)
+```
+
+
+```{r}
+library(ggplot2)
+table(credit$EDUCATION)
+
+credit %>% ggplot(., aes(x=EDUCATION)) + geom_histogram()
+```
+
+```{r}
+credit$EDUCATION <- factor(credit$EDUCATION)
+
+credit$EDUCATION <- fct_collapse(
+    credit$EDUCATION,
+    graduate_school = "1",
+    university = "2",
+    high_school = "3",
+    others = c("0", "4", "5", "6")
+)
+
+credit %>% select_if(is_numeric) %>% gather(cols, values, 2:24) %>% ggplot(., aes(x=values)) + geom_histogram(stat="count") + facet_wrap(~ cols, ncol = 4)
+```
+
+
+
+
+
+
+```{r}
+df1 <- data.frame(
+    player = c("Leo", "Mark", "Eli", "Louisa", "Paul", "Dean"),
+    team = c("LEOH", "WOAK", "WOAK", "UTX", "UTX", "LEOH"),
+    day1points = c("25","23","30","41","26","20"),
+    day2points = c("24","25","33","45","26","23")
+)
+
+df1 <- df1 %>% mutate(points=as.numeric(day1points) + as.numeric(day2points), day1points=as.numeric(day1points), day2points=as.numeric(day2points))
+df1
+
+```
+
+
