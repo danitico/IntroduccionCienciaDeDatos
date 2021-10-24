@@ -10,12 +10,13 @@ if (!requireNamespace("ggplot2")) {
 library(tidyverse)
 library(ggplot2)
 
-# We need to predict MedianHouseValue
-df <- read.keel("california.dat")
+# tenemos que predecir MedianHouseValue
+df <- read.keel("california.dat") # Tarda un rato..
 df <- df %>% mutate(MedianHouseValue=as.numeric(MedianHouseValue))
 
 str(df)
 
+# Matriz de scatter plots
 pairs(df)
 
 fit1 <- lm(MedianHouseValue~Longitude, data=df)
@@ -42,12 +43,12 @@ summary(fit7)
 fit8 <- lm(MedianHouseValue~MedianIncome, data=df)
 summary(fit8)
 
-# The best model with one independent variable which is MedianIncome
+# El mejor model con una sola variable independiente es aquel que utiliza MediaIncome, es decir, fit8
 
 rmsefit8 <- sqrt(sum(fit8$residuals^2)/(length(fit8$residuals)-2))
 rmsefit8
 
-# Prediction
+# Predicción
 yprime <- predict(fit8, data.frame(MedianIncome=df$MedianIncome))
 
 # Plotting original relation between the two variables and the new model

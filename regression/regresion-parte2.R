@@ -14,8 +14,8 @@ library(tidyverse)
 library(ggplot2)
 library(kknn)
 
-# We need to predict MedianHouseValue
-df <- read.keel("california.dat")
+# Tenemos que predecir MedianHouseValue
+df <- read.keel("california.dat") # Tarda un rato..
 df <- df %>% mutate(MedianHouseValue=as.numeric(MedianHouseValue))
 
 # Knn consigue mejores resultados que una regresión lineal multiple
@@ -23,10 +23,10 @@ df <- df %>% mutate(MedianHouseValue=as.numeric(MedianHouseValue))
 fitknn1 <- kknn(MedianHouseValue ~ ., df, df)
 yprime1 <- fitknn1$fitted.values
 
-# Plot
+# Gráfico mostrando los datos originales y la predicción del modelo
 df %>% ggplot(aes(x=MedianIncome, y=MedianHouseValue)) + geom_point() + geom_point(aes(x=MedianIncome, y=yprime1), color="blue")
 
-# RMSE
+# Error cuadrático medio
 sqrt(sum((df$MedianHouseValue - yprime1)^2)/length(yprime1))
 
 
@@ -77,7 +77,10 @@ run_lm_fold <- function(i, x, tt = "test") {
     sum(abs(test$Y-yprime)^2)/length(yprime) ##MSE
 }
 
+# Error training con lm
 lmMSEtrain <- mean(sapply(1:5,run_lm_fold,nombre,"train"))
+
+# Error training con ls
 lmMSEtest <- mean(sapply(1:5,run_lm_fold,nombre,"test"))
 
 #------------- 5-fold cross-validation KNN todas las variables
@@ -148,7 +151,7 @@ colnames(wilcoxon_1_2) <- c(
     colnames(tablatst)[2]
 )
 
-# Como p-value > 0.05, se puede confirmar que no hay diferencias significativas
+# Como p-value > 0.05, se acepta la hipótesis nula y se puede confirmar que no hay diferencias significativas
 LMvsKNNtst <- wilcox.test(wilcoxon_1_2[,1], wilcoxon_1_2[,2], alternative = "two.sided", paired=TRUE)
 LMvsKNNtst$statistic
 
