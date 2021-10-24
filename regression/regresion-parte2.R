@@ -77,8 +77,8 @@ run_lm_fold <- function(i, x, tt = "test") {
     sum(abs(test$Y-yprime)^2)/length(yprime) ##MSE
 }
 
-lmMSEtrain<-mean(sapply(1:5,run_lm_fold,nombre,"train"))
-lmMSEtest<-mean(sapply(1:5,run_lm_fold,nombre,"test"))
+lmMSEtrain <- mean(sapply(1:5,run_lm_fold,nombre,"train"))
+lmMSEtest <- mean(sapply(1:5,run_lm_fold,nombre,"test"))
 
 #------------- 5-fold cross-validation KNN todas las variables
 nombre <- "california"
@@ -103,5 +103,61 @@ run_knn_fold <- function(i, x, tt = "test") {
     sum(abs(test$Y-yprime)^2)/length(yprime) ##MSE
 }
 
-knnMSEtrain<-mean(sapply(1:5,run_knn_fold,nombre,"train"))
-knnMSEtest<-mean(sapply(1:5,run_knn_fold,nombre,"test"))
+# Error training con knn
+knnMSEtrain <- mean(sapply(1:5,run_knn_fold,nombre,"train"))
+
+# Error test con knn
+knnMSEtest <- mean(sapply(1:5,run_knn_fold,nombre,"test"))
+
+
+# Comparativa algoritmos
+
+# Errores medios de test
+resultados <- read.csv("regr_test_alumnos.csv")
+tablatst <- cbind(resultados[,2:dim(resultados)[2]])
+colnames(tablatst) <- names(resultados)[2:dim(resultados)[2]]
+rownames(tablatst) <- resultados[,1]
+
+#l Errores medios de entrenamiento
+resultados <- read.csv("regr_train_alumnos.csv")
+tablatra <- cbind(resultados[,2:dim(resultados)[2]])
+colnames(tablatra) <- names(resultados)[2:dim(resultados)[2]]
+rownames(tablatra) <- resultados[,1]
+
+
+# WILCOXON
+##TABLA NORMALIZADA - lm (other) vs knn (ref) para WILCOXON
+
+diffs <- (tablatst[,1] - tablatst[,2]) / tablatst[,1]
+
+wilcoxon_1_2 <- cbind(
+    ifelse(
+        diffs<0,
+        abs(diffs)+0.1,
+        0+0.1
+    ),
+    ifelse(
+        diffs>0,
+        abs(diffs)+0.1,
+        0+0.1
+    )
+)
+
+colnames(wilcoxon_1_2) <- c(
+    colnames(tablatst)[1],
+    colnames(tablatst)[2]
+)
+
+# Como p-value > 0.05, se puede confirmar que no hay diferencias significativas
+LMvsKNNtst <- wilcox.test(wilcoxon_1_2[,1], wilcoxon_1_2[,2], alternative = "two.sided", paired=TRUE)
+LMvsKNNtst$statistic
+
+# Como p-value < 0.05, se rechaza la hipótesis nula y se puede afirmar que al menos uno de los algoritmos es diferente
+test_friedman <- friedman.test(as.matrix(tablatst))
+test_friedman
+
+# post hoc homd
+# Al hacer el post-hoc con holm se puede apreciar que el método m5 es significativamente diferente a la regresión lineal múltiple y al knn
+tam <- dim(tablatst)
+groups <- rep(1:tam[2], each=tam[1])
+pairwise.wilcox.test(as.matrix(tablatst), groups, p.adjust = "holm", paired = TRUE)
