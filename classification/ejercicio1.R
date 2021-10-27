@@ -10,19 +10,22 @@ library("caret")
 library("philentropy")
 library("class")
 library("tidyverse")
+library("ggplot2")
 
 getMode <- function (v) {
   uniqueValues <- unique(v)
-  uniqueValues[
-    which.max(
-      tabulate(
-        match(v, uniqueValues)
+  as.vector(
+    uniqueValues[
+      which.max(
+        tabulate(
+          match(v, uniqueValues)
+        )
       )
-    )
-  ]
+    ]
+  )
 }
 
-my_knn <- function (train, train_labels, test=NA, k=1, metric="euclidean") {
+my_knn <- function (train, train_labels, test=NULL, k=1, metric="euclidean") {
   if (k <= 0) {
     print("K can not be zero or negative")
     return
@@ -37,7 +40,7 @@ my_knn <- function (train, train_labels, test=NA, k=1, metric="euclidean") {
   test <- as.data.frame(test)
   train_labels <- as.data.frame(train_labels)
 
-  if (!all(is.na(test))) {
+  if (!is.null(test)) {
     if (dim(test)[2] != dim(train)[2]) {
       print("Train and test have different number of columns")
       return
@@ -52,35 +55,40 @@ my_knn <- function (train, train_labels, test=NA, k=1, metric="euclidean") {
   distanceMatrix <- NULL
   
   # Get distance matrix
-  if (!all(is.na(test))) {
-    for (i in 1:nrow(test)) {
-      distanceRow <- NULL
-
-      for (j in 1:nrow(train)) {
-        distanceRow <- c(
-          distanceRow,
-          as.numeric(distance(
-            rbind(test[i,], train[j,]),
-            method = metric,
-            mute.message = T
-          ))
-        )
-      }
-      
-      distanceMatrix <- rbind(distanceMatrix, distanceRow)
-    }
-  } else {
+  if (is.null(test)) {
     distanceMatrix <- distance(train, method = metric, mute.message = T)
+  } else {
+    distanceMatrix <- apply(
+      train,
+      1,
+      function (x) {
+        apply(
+          test,
+          1,
+          function (y) {
+            as.numeric(
+              distance(
+                rbind(x, y),
+                method = metric,
+                mute.message = T
+              )
+            ) 
+          }
+        )
+      }
+    )
   }
   
-  if (!is.na(test)) {
+  rownames(distanceMatrix) <- NULL
+
+  if (is.null(test)) {
     response <- apply(
       distanceMatrix,
       1,
       function (x) {
         getMode(
           train_labels[
-            sort(x)[1:k],
+            order(x, decreasing = F)[2:(k+1)],
           ]
         )
       }
@@ -92,50 +100,48 @@ my_knn <- function (train, train_labels, test=NA, k=1, metric="euclidean") {
       function (x) {
         getMode(
           train_labels[
-            sort(x)[2:(k+1)],
+            order(x, decreasing = F)[1:k],
           ]
         )
       }
     )
   }
   
-  # Determine class label
-  # apply(
-  #   distanceMatrix,
-  #   1,
-  #   function (x) {
-  #     getMode(
-  #       train_labels[
-  #         sort(x)[ifelse(all(is.na(test)), 2:(k+1), 1:k)]
-  #       ]
-  #     )
-  #   }
-  # )
+  response
 }
 
-wbcd <- read.csv("https://resources.oreilly.com/examples/9781784393908/raw/ac9fe41596dd42fc3877cfa8ed410dd346c43548/Machine%20Learning%20with%20R,%20Second%20Edition_Code/Chapter%2003/wisc_bc_data.csv")
-wbcd <- wbcd %>% select(-id)
-wbcd <- wbcd %>% mutate(diagnosis = factor(diagnosis, labels = c("Benign", "Malignant")))
-wbcd_n <- wbcd %>% mutate_if(is.numeric, scale, center = TRUE, scale = TRUE)
-mwbcd <- wbcd %>% pivot_longer(cols = -diagnosis)
+data <- read.csv("https://resources.oreilly.com/examples/9781784393908/raw/ac9fe41596dd42fc3877cfa8ed410dd346c43548/Machine%20Learning%20with%20R,%20Second%20Edition_Code/Chapter%2003/wisc_bc_data.csv")
+data <- data %>% select(-id)
+data <- data %>% mutate(diagnosis = factor(diagnosis, labels = c("Benign", "Malignant")))
+data <- data %>% mutate_if(is.numeric, scale, center = TRUE, scale = TRUE)
 
 # Create training and test data (holdout 90%-10%)
-shuffle_ds <- sample(dim(wbcd_n)[1])
-pct90 <- (dim(wbcd_n)[1] * 90) %/% 100
-wbcd_train <- wbcd_n[shuffle_ds[1:pct90], -1]
-wbcd_test <- wbcd_n[shuffle_ds[(pct90+1):dim(wbcd_n)[1]], -1]
-
 # Create labels for training and test data
-wbcd_train_labels <- wbcd_n[shuffle_ds[1:pct90], 1]
-wbcd_test_labels <- wbcd_n[shuffle_ds[(pct90+1):dim(wbcd_n)[1]], 1]
+shuffle_ds <- sample(dim(data)[1])
+pct90 <- (dim(data)[1] * 90) %/% 100
+
+x_train <- data[shuffle_ds[1:pct90], -1]
+x_test <- data[shuffle_ds[(pct90+1):dim(data)[1]], -1]
+y_train <- data[shuffle_ds[1:pct90], 1]
+y_test <- data[shuffle_ds[(pct90+1):dim(data)[1]], 1]
 
 
-b <- my_knn(wbcd_train, wbcd_train_labels, wbcd_test, 21)
-b
+euclideanResults <- NULL
+manhattanResults <- NULL
 
+for (k in seq(1, 21, 2)) {
+  euclideanPred <- my_knn(x_train, y_train, x_test, k, metric = "euclidean")
+  manhattanPred <- my_knn(x_train, y_train, x_test, k, metric = "manhattan")
+  
+  euclideanResults <- c(euclideanResults, mean(euclideanPred == y_test))
+  manhattanResults <- c(manhattanResults, mean(manhattanPred == y_test))
+}
 
+resultMatrix <- as.data.frame(cbind(euclideanResults, manhattanResults))
 
+colnames(resultMatrix) <- c("euclidean", "manhattan")
+resultMatrix <- resultMatrix %>% mutate(kNeighbours = seq(1, 21, 2))
 
-
+resultMatrix %>% gather(method, accuracy, 1:2) %>% ggplot(aes(y=accuracy, x=kNeighbours)) + geom_line() + facet_wrap(~ method)
 
 
