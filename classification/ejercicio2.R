@@ -1,3 +1,15 @@
+if(!requireNamespace("caret")) {
+    install.packages("caret")
+}
+
+if(!requireNamespace("class")) {
+    install.packages("class")
+}
+
+if(!requireNamespace("tidyverse")) {
+    install.packages("tidyverse")
+}
+
 library("caret")
 library("class")
 library("tidyverse")
@@ -7,6 +19,5 @@ data <- data %>% select(-id)
 data <- data %>% mutate(diagnosis = factor(diagnosis, labels = c("Benign", "Malignant")))
 data <- data %>% mutate_if(is.numeric, scale, center = TRUE, scale = TRUE)
 
-x <- data %>% select(-diagnosis)
-
-logisticRegressionModel <- train(diagnosis ~ ., data = data, trControl = trainControl(method = "cv", number = 10), method = "glm", family=binomial())
+logisticRegressionModel <- train(diagnosis ~ ., data = data, trControl = trainControl(method = "cv", number = 10), method = "glm", family="binomial", control = glm.control(maxit=250))
+logisticRegressionModel

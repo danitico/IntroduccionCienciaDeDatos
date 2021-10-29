@@ -1,3 +1,19 @@
+if(!requireNamespace("MASS")) {
+    install.packages("MASS")
+}
+
+if(!requireNamespace("ISLR")) {
+    install.packages("ISLR")
+}
+
+if(!requireNamespace("ggplot2")) {
+    install.packages("ggplot2")
+}
+
+if(!requireNamespace("tidyverse")) {
+    install.packages("tidyverse")
+}
+
 library(MASS)
 library(ISLR)
 library(ggplot2)

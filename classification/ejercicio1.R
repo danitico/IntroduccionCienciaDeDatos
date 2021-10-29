@@ -6,6 +6,18 @@ if(!requireNamespace("philentropy")) {
   install.packages("philentropy")
 }
 
+if(!requireNamespace("class")) {
+  install.packages("class")
+}
+
+if(!requireNamespace("tidyverse")) {
+  install.packages("tidyverse")
+}
+
+if(!requireNamespace("ggplot2")) {
+  install.packages("ggplot2")
+}
+
 library("caret")
 library("philentropy")
 library("class")
@@ -80,7 +92,10 @@ my_knn <- function (train, train_labels, test=NULL, k=1, metric="euclidean") {
   }
   
   rownames(distanceMatrix) <- NULL
-
+  
+  # When train == test, we start to take the k min values from the second position because the first position will be the distance between 
+  # the train observation and itself, which is 0
+  # Otherwise, we take the first k min values from the first position
   if (is.null(test)) {
     response <- apply(
       distanceMatrix,
@@ -106,7 +121,7 @@ my_knn <- function (train, train_labels, test=NULL, k=1, metric="euclidean") {
       }
     )
   }
-  
+
   response
 }
 
@@ -137,9 +152,7 @@ for (k in seq(1, 21, 2)) {
   manhattanResults <- c(manhattanResults, mean(manhattanPred == y_test))
 }
 
-colnames(resultMatrix) <- c("euclidean", "manhattan")
-resultMatrix <- resultMatrix %>% mutate(kNeighbours = seq(1, 21, 2))
+resultMatrix <- as.data.frame(cbind(euclideanResults, manhattanResults))
+resultMatrix <- resultMatrix %>% mutate(k = seq(1, 21, 2)) %>% rename(euclidean=euclideanResults, manhattan=manhattanResults)
 
-resultMatrix %>% gather(method, accuracy, 1:2) %>% ggplot(aes(y=accuracy, x=kNeighbours)) + geom_line() + facet_wrap(~ method)
-
-
+resultMatrix %>% gather(method, accuracy, 1:2) %>% ggplot(aes(y=accuracy, x=k)) + geom_col() + facet_wrap(~ method) + scale_x_continuous(breaks = seq(1, 21, 2))

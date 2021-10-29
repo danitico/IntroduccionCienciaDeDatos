@@ -1,7 +1,10 @@
+if(!requireNamespace("tidyverse")) {
+    install.packages("tidyverse")
+}
+
 library(tidyverse)
 
 clasif_train <- read.csv("clasif_train_alumnos.csv", row.names = 1)
-
 
 # Comparar LDA y QDA con wilcoxon
 
