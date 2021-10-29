@@ -129,9 +129,6 @@ y_test <- data[shuffle_ds[(pct90+1):dim(data)[1]], 1]
 euclideanResults <- NULL
 manhattanResults <- NULL
 
-
-euclideanPred <- my_knn(data %>% select(-diagnosis), data %>% select(diagnosis), NULL, 2, metric = "euclidean")
-
 for (k in seq(1, 21, 2)) {
   euclideanPred <- my_knn(x_train, y_train, x_test, k, metric = "euclidean")
   manhattanPred <- my_knn(x_train, y_train, x_test, k, metric = "manhattan")
