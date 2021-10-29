@@ -37,13 +37,13 @@ my_knn <- function (train, train_labels, test=NULL, k=1, metric="euclidean") {
   }
   
   train <- as.data.frame(train)
-  test <- as.data.frame(test)
   train_labels <- as.data.frame(train_labels)
-
+  
   if (!is.null(test)) {
+    test <- as.data.frame(test)
+    
     if (dim(test)[2] != dim(train)[2]) {
       print("Train and test have different number of columns")
-      return
     }
   }
 
@@ -129,6 +129,9 @@ y_test <- data[shuffle_ds[(pct90+1):dim(data)[1]], 1]
 euclideanResults <- NULL
 manhattanResults <- NULL
 
+
+euclideanPred <- my_knn(data %>% select(-diagnosis), data %>% select(diagnosis), NULL, 2, metric = "euclidean")
+
 for (k in seq(1, 21, 2)) {
   euclideanPred <- my_knn(x_train, y_train, x_test, k, metric = "euclidean")
   manhattanPred <- my_knn(x_train, y_train, x_test, k, metric = "manhattan")
@@ -136,8 +139,6 @@ for (k in seq(1, 21, 2)) {
   euclideanResults <- c(euclideanResults, mean(euclideanPred == y_test))
   manhattanResults <- c(manhattanResults, mean(manhattanPred == y_test))
 }
-
-resultMatrix <- as.data.frame(cbind(euclideanResults, manhattanResults))
 
 colnames(resultMatrix) <- c("euclidean", "manhattan")
 resultMatrix <- resultMatrix %>% mutate(kNeighbours = seq(1, 21, 2))

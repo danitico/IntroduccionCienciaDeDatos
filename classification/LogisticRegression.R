@@ -29,8 +29,18 @@ m1 <- polr(opinion ~ x1 + x2 + x3, data=mydata, Hess=TRUE)
 summary(m1)
 
 # Getting coefficients and p-values
-m1.coef <- data.frame(coef(summary(m1)))
-m1.coef$pval = round((pnorm(abs(m1.coef$t.value), lower.tail = FALSE) * 2), 4)
+m1.coef <- data.frame(
+  coef(
+    summary(m1)
+  )
+)
+
+m1.coef$pval = round(
+  pnorm(
+    abs(m1.coef$t.value), lower.tail = FALSE
+  ) * 2,
+  4
+)
 
 m1.coef
 
@@ -39,11 +49,25 @@ m1.coef
 dim(mydata)[1]
 
 # Find the p-value for a t-value of 3.9418
-pt(3.9418, dim(mydata)[1]-3, lower.tail=FALSE)*2
+pt(
+  3.9418,
+  dim(mydata)[1]-3,
+  lower.tail=FALSE
+)*2
 
 # Getting coefficients and p-values
-m1.coef <- data.frame(coef(summary(m1)))
-m1.coef$pval = round(pt(abs(m1.coef$t.value), dim(mydata)[1]-3, lower.tail = FALSE) * 2, 4)
+m1.coef <- data.frame(
+  coef(summary(m1))
+)
+
+m1.coef$pval = round(
+  pt(
+    abs(m1.coef$t.value),
+    dim(mydata)[1]-3,
+    lower.tail = FALSE
+  ) * 2,
+  4
+)
 
 m1.coef
 
@@ -57,6 +81,7 @@ m1.pred <- predict(m1, type="probs")
 m1.pred
 
 # Load the library
+install.packages("brant")
 library(brant)
 
 # Run the Brant test on the model: proportional odds assumption or the parallel regression assumption

@@ -75,7 +75,7 @@ mean(lda.pred$class==Smarket.2005$Direction)
 x <- seq(min(Smarket.2005$Lag1), max(Smarket.2005$Lag1), length.out=dim(Smarket.2005)[1])
 y <- seq(min(Smarket.2005$Lag2), max(Smarket.2005$Lag2), length.out=dim(Smarket.2005)[1])
 
-Xcon <- matrix(c(rep(x,length(y)), rep(y, rep(length(x), length(y)))),,2) #Set all possible pairs of x and y on a grid
+Xcon <- matrix(c(rep(x,length(y)), rep(y, rep(length(x), length(y)))),2) #Set all possible pairs of x and y on a grid
 
 out <- predict(lda.fit, data.frame(Lag1=Xcon[,1], Lag2=Xcon[,2]))$post    #posterior probabilities of a point belonging to each class 
 
