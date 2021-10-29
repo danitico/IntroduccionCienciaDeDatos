@@ -528,3 +528,84 @@ crabs %>% dplyr::select(-c(1:3)) %>% log10(.) %>% pairs(.)
 ```
 
 
+
+# Como crear subgrupos de datos en R
+
+**Busca información sobre la function cut(). Para ilustrar su uso vamos a utilizar el dataset state.x77. Si no lo tienes instalado instala el paquete R-Datasets. Usa la función head() para ver como son tus datos..**
+
+```{r}
+library(tidyverse)
+```
+
+
+**Extrae la columna Frost y asigna el resultado a la variable frost**
+
+```{r}
+x77 <- as.data.frame(state.x77)
+frost <- x77$Frost
+```
+
+
+**hora intenta agrupar los datos en frost en tres niveles. Para crear bins en tus datos puedes utilizar la función cut()**
+
+```{r}
+cut(frost, 3)
+```
+
+
+**¿Que obtienes como nombres de los niveles?**
+
+Los niveles son (-0.188,62.7]m (62.7,125] y (125,188]
+
+**En la realidad no existen estados que tengan frost en días negativos. Esto es porque R añade un poco de padding. Prueba a solucionar el problema utilizando el parámetro include.lowest=TRUE en cut()**
+
+```{r}
+frostFactor <- cut(frost, 3, include.lowest = T)
+```
+
+**Los nombres de los niveles no son demasiado informativos, especifica nuevos nombres para los niveles. Después de este paso has creado un factor que clasifica los estados en bajo, medio y alto según el numero de heladas.**
+
+```{r}
+levels(frostFactor) <- c("Bajo", "Medio", "Alto")
+frostFactor
+```
+
+**Ahora cuenta el número de estados que  hay en cada uno de los niveles.**
+
+```{r}
+table(frostFactor)
+```
+
+
+# Como ordenar tablas
+
+**Utiizando el paquete dplyr realiza el siguiente análisis sobre el dataset murders**
+
+```{r}
+install.packages("dslabs")
+library("dslabs")
+library("tidyverse")
+```
+
+**Averigua cual es el estado con la mayor población**
+
+```{r}
+murders %>% slice(which.max(population))
+```
+
+**Averigua cual es el estado con el menor ratio de asesinatos**
+
+```{r}
+murders %>% slice(which.min(total))
+```
+**Crea una tabla ordenada alfabeticamente por region y por el ratio de asesinatos**
+
+```{r}
+murders %>% arrange(region, total)
+```
+
+**Crea una tabla con la media del ratio de asesinatos por region**
+
+```{r}
+murders %>% group_by(region) %>% summarise(murder_ration_mean=mean(total))
+```
