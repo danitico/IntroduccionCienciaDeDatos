@@ -134,3 +134,8 @@ read.keel <- function(file){
     
     return(df)
 }
+
+getMode <- function(v) {
+    uniqv <- unique(v)
+    uniqv[which.max(tabulate(match(v, uniqv)))]
+}
