@@ -10,11 +10,16 @@ if (!requireNamespace("Hmisc", quietly = T)) {
     install.packages("Hmisc")
 }
 
+if (!requireNamespace("corrplot", quietly = T)) {
+    install.packages("corrplot")
+}
+
 source("utils.R")
 
 library("tidyverse")
 library("moments")
 library("Hmisc")
+library("corrplot")
 
 wankara <- read.keel("wankara/wankara.dat")
 wankara <- wankara %>% mutate(Mean_temperature=as.numeric(Mean_temperature))
@@ -402,6 +407,9 @@ qqline(wankara$Max_wind_speed)
 
 # Bivariate analysis
 
-wankara %>% select(-Mean_temperature) %>% pairs(.)
+correlation <- cor(wankara)
+corrplot(correlation, method = "number")
+
+wankara %>% pairs(.)
 
 
