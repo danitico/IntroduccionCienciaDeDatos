@@ -129,9 +129,6 @@ read.keel <- function(file){
         }
     }
     
-    #Class column as factor
-    df[ncol(df)] <- as.factor(df[ncol(df)][[1]])
-    
     return(df)
 }
 

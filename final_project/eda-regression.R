@@ -82,7 +82,9 @@ sd(wankara$Max_temperature)
 getMode(wankara$Max_temperature)
 
 ## Se renderiza un boxplot de la variable Max_temperature
-wankara %>% ggplot(aes(y=Max_temperature)) + geom_boxplot()
+wankara %>% ggplot(aes(y=Max_temperature)) + geom_boxplot() + labs(
+    title="Boxplot de la variable Max_temperature"
+)
 
 ## Comprobar asimetria y la forma del pico de la distribucíon
 
@@ -120,7 +122,9 @@ getMode(wankara$Min_temperature)
 
 ## Se renderiza un boxplot de la variable Min_temperature
 # Existe un outlier. Hay que investigar si realmente lo es ,porque puede ser un caso extremo debido a la temática que se está tratando, la temperatura
-wankara %>% ggplot(aes(y=Min_temperature)) + geom_boxplot()
+wankara %>% ggplot(aes(y=Min_temperature)) + geom_boxplot() + labs(
+    title = "Boxplot de la variable Min_Temperature"
+)
 
 ## Comprobar asimetria y la forma del pico de la distribucíon
 
@@ -129,7 +133,14 @@ kurtosis(wankara$Min_temperature) # El pico de la distribución es más alto que
 
 ## Con el grafico se puede ver que es asimetrica por la izquierda,
 ## que el pico de la distribución es más alto que el pico de una distribución normal
-wankara %>% ggplot(aes(x=Min_temperature)) + geom_histogram(bins = 20)
+wankara %>% ggplot(aes(x=Min_temperature)) + geom_histogram(bins = 20) + labs(
+    title = "Histograma de la variable Min_Temperature",
+    y = "Número de casos"
+)
+
+wankara %>% ggplot(aes(x=Min_temperature, y=Mean_temperature)) + geom_point() + labs(
+    title = "Diagrama de dispersión de las variables Min y Mean Temperature"
+)
 
 
 # Test de shafiro para ver si la variable Min_temperature sigue una distribución normal
@@ -159,7 +170,9 @@ getMode(wankara$Dewpoint)
 
 ## Se renderiza un boxplot de la variable Dewpoint
 # Existen varios outlier. Hay que investigar si realmente lo es, porque pueden ser casos extremos debido a la temática que se está tratando, la temperatura
-wankara %>% ggplot(aes(y=Dewpoint)) + geom_boxplot()
+wankara %>% ggplot(aes(y=Dewpoint)) + geom_boxplot() + labs(
+    title = "Boxplot de la variable Dewpoint"
+)
 
 ## Comprobar asimetria y la forma del pico de la distribucíon
 
@@ -168,7 +181,14 @@ kurtosis(wankara$Dewpoint) # El pico de la distribución es más alto que el de 
 
 ## Con el grafico se puede ver que es asimetrica por la izquierda,
 ## que el pico de la distribución es más alto que el pico de una distribución normal
-wankara %>% ggplot(aes(x=Dewpoint)) + geom_histogram(bins = 20)
+wankara %>% ggplot(aes(x=Dewpoint)) + geom_histogram(bins = 20) + labs(
+    title = "Histograma de la variable Dewpoint",
+    y = "Número de casos"
+)
+
+wankara %>% ggplot(aes(x=Dewpoint, y=Mean_temperature)) + geom_point() + labs(
+    title = "Diagrama de dispersión de las variables Min y Mean Temperature"
+)
 
 # Test de shafiro para ver si la variable Dewpoint sigue una distribución normal
 # Como el p-value que se obtiene (2.723e-15) es menor que 0.05, se puede afirmar que la variable Dewpoint no sigue una distribución normal
@@ -197,7 +217,9 @@ getMode(wankara$Precipitation)
 
 ## Se renderiza un boxplot de la variable Precipitation
 # Todos son outliers. Se puede deber a periodos de sequía o al mal funcionamiento del pluviometro
-wankara %>% ggplot(aes(y=Precipitation)) + geom_boxplot()
+wankara %>% ggplot(aes(y=Precipitation)) + geom_boxplot() + labs(
+    title = "Boxplot de la variable Precipitation"
+)
 
 ## Comprobar asimetria y la forma del pico de la distribucíon
 
@@ -206,7 +228,13 @@ kurtosis(wankara$Precipitation) # El pico de la distribución es más alto que e
 
 ## Con el grafico se puede ver que es asimetrica por la izquierda,
 ## que el pico de la distribución es más alto que el pico de una distribución normal
-wankara %>% ggplot(aes(x=Precipitation)) + geom_histogram(bins = 20)
+wankara %>% ggplot(aes(x=Precipitation)) + geom_histogram(bins = 20) + labs(
+    title = "Histograma de la variable Precipitation"
+)
+
+wankara %>% ggplot(aes(x=Precipitation, y=Mean_temperature)) + geom_point() + labs(
+    title = "Diagrama de dispersión de las variables Precipitation y Mean_Temperature"
+)
 
 # Test de shafiro para ver si la variable Precipitation sigue una distribución normal
 # Como el p-value que se obtiene (< 2.2e-16) es menor que 0.05, se puede afirmar que la variable Precipitation no sigue una distribución normal
@@ -234,7 +262,9 @@ getMode(wankara$Sea_level_pressure)
 
 ## Se renderiza un boxplot de la variable Sea_level_pressure
 # # Existen varios outlier. Hay que investigar si realmente lo es, porque pueden ser casos extremos debido a la temática que se está tratando, la meteorología
-wankara %>% ggplot(aes(y=Sea_level_pressure)) + geom_boxplot()
+wankara %>% ggplot(aes(y=Sea_level_pressure)) + geom_boxplot() + labs(
+    title = "Boxplot de la variable Sea_level_pressure"
+)
 
 ## Comprobar asimetria y la forma del pico de la distribucíon
 
@@ -243,7 +273,14 @@ kurtosis(wankara$Sea_level_pressure) # El pico de la distribución es más alto 
 
 ## Con el grafico se puede ver que es asimetrica por la derecha,
 ## y que el pico de la distribución es más alto que el pico de una distribución normal
-wankara %>% ggplot(aes(x=Sea_level_pressure)) + geom_histogram(bins = 30)
+wankara %>% ggplot(aes(x=Sea_level_pressure)) + geom_histogram(bins = 30) + labs(
+    title = "Histograma de la variable Sea_level_pressure",
+    y = "Número de casos"
+)
+
+wankara %>% ggplot(aes(x=Sea_level_pressure, y=Mean_temperature)) + geom_point() + labs(
+    title = "Diagrama de dispersión de las variables Sea_level_pressure y Mean_Temperature"
+)
 
 # Test de shafiro para ver si la variable Sea_level_pressure sigue una distribución normal
 # Como el p-value que se obtiene (9.76e-12) es menor que 0.05, se puede afirmar que la variable Sea_level_pressure no sigue una distribución normal
@@ -271,7 +308,9 @@ getMode(wankara$Standard_pressure)
 
 ## Se renderiza un boxplot de la variable Standard_pressure
 # # Existen varios outlier. Hay que investigar si realmente lo es, porque pueden ser casos extremos debido a la temática que se está tratando, la meteorología
-wankara %>% ggplot(aes(y=Standard_pressure)) + geom_boxplot()
+wankara %>% ggplot(aes(y=Standard_pressure)) + geom_boxplot() + labs(
+    title = "Boxplot de la variable Standard_pressure"
+)
 
 ## Comprobar asimetria y la forma del pico de la distribucíon
 
@@ -280,7 +319,14 @@ kurtosis(wankara$Standard_pressure) # El pico de la distribución es más alto q
 
 ## Con el grafico se puede ver que es asimetrica por la izquierda,
 ## y que el pico de la distribución es más alto que el pico de una distribución normal
-wankara %>% ggplot(aes(x=Standard_pressure)) + geom_histogram(bins = 30)
+wankara %>% ggplot(aes(x=Standard_pressure)) + geom_histogram(bins = 30) + labs(
+    title = "Histograma de la variable Standard_pressure",
+    y = "Número de casos"
+)
+
+wankara %>% ggplot(aes(x=Standard_pressure, y=Mean_temperature)) + geom_point() + labs(
+    title = "Diagrama de dispersión de las variables Standard_pressure y Mean_Temperature"
+)
 
 # Test de shafiro para ver si la variable Standard_pressure sigue una distribución normal
 # Como el p-value que se obtiene (4.617e-05) es menor que 0.05, se puede afirmar que la variable Standard_pressure no sigue una distribución normal
@@ -309,7 +355,9 @@ getMode(wankara$Visibility)
 
 ## Se renderiza un boxplot de la variable Visibility
 # # Existen varios outlier. Hay que investigar si realmente lo es, porque pueden ser casos extremos debido a la temática que se está tratando, la meteorología
-wankara %>% ggplot(aes(y=Visibility)) + geom_boxplot()
+wankara %>% ggplot(aes(y=Visibility)) + geom_boxplot() + labs(
+    title = "Boxplot de la variable Visibility"
+)
 
 ## Comprobar asimetria y la forma del pico de la distribucíon
 
@@ -318,7 +366,14 @@ kurtosis(wankara$Visibility) # El pico de la distribución es más alto que el d
 
 ## Con el grafico se puede ver que es asimetrica por la izquierda,
 ## y que el pico de la distribución es más alto que el pico de una distribución normal
-wankara %>% ggplot(aes(x=Visibility)) + geom_histogram(bins = 30)
+wankara %>% ggplot(aes(x=Visibility)) + geom_histogram(bins = 30) + labs(
+    title = "Histograma de la variable Visibility",
+    y = "Número de casos"
+)
+
+wankara %>% ggplot(aes(x=Visibility, y=Mean_temperature)) + geom_point() + labs(
+    title = "Diagrama de dispersión de las variables Visibility y Mean_Temperature"
+)
 
 # Test de shafiro para ver si la variable Visibility sigue una distribución normal
 # Como el p-value que se obtiene (< 2.2e-16) es menor que 0.05, se puede afirmar que la variable Visibility no sigue una distribución normal
@@ -345,7 +400,9 @@ getMode(wankara$Wind_speed)
 
 ## Se renderiza un boxplot de la variable Wind_speed
 # # Existen varios outlier. Hay que investigar si realmente lo es, porque pueden ser casos extremos debido a la temática que se está tratando, la meteorología
-wankara %>% ggplot(aes(y=Wind_speed)) + geom_boxplot()
+wankara %>% ggplot(aes(y=Wind_speed)) + geom_boxplot() + labs(
+    title = "Boxplot de la variable Wind_speed"
+)
 
 ## Comprobar asimetria y la forma del pico de la distribucíon
 
@@ -354,7 +411,14 @@ kurtosis(wankara$Wind_speed) # El pico de la distribución es más alto que el d
 
 ## Con el grafico se puede ver que es asimetrica por la derecha,
 ## y que el pico de la distribución es más alto que el pico de una distribución normal
-wankara %>% ggplot(aes(x=Wind_speed)) + geom_histogram(bins = 30)
+wankara %>% ggplot(aes(x=Wind_speed)) + geom_histogram(bins = 30) + labs(
+    title = "Histograma de la variable Wind_speed",
+    y = "Número de casos"
+)
+
+wankara %>% ggplot(aes(x=Wind_speed, y=Mean_temperature)) + geom_point() + labs(
+    title = "Diagrama de dispersión de las variables Wind_speed y Mean_Temperature"
+)
 
 # Test de shafiro para ver si la variable Wind_speed sigue una distribución normal
 # Como el p-value que se obtiene (< 2.2e-16) es menor que 0.05, se puede afirmar que la variable Wind_speed no sigue una distribución normal
@@ -384,7 +448,9 @@ getMode(wankara$Max_wind_speed)
 
 ## Se renderiza un boxplot de la variable Max_wind_speed
 # # Existen varios outlier. Hay que investigar si realmente lo es, porque pueden ser casos extremos debido a la temática que se está tratando, la meteorología
-wankara %>% ggplot(aes(y=Max_wind_speed)) + geom_boxplot()
+wankara %>% ggplot(aes(y=Max_wind_speed)) + geom_boxplot() + labs(
+    title = "Boxplot de la variable Max_wind_speed"
+)
 
 ## Comprobar asimetria y la forma del pico de la distribucíon
 
@@ -393,7 +459,14 @@ kurtosis(wankara$Max_wind_speed) # El pico de la distribución es más alto que 
 
 ## Con el grafico se puede ver que es asimetrica por la derecha,
 ## y que el pico de la distribución es más alto que el pico de una distribución normal
-wankara %>% ggplot(aes(x=Max_wind_speed)) + geom_histogram(bins = 30)
+wankara %>% ggplot(aes(x=Max_wind_speed)) + geom_histogram(bins = 30) + labs(
+    title = "Histograma de la variable Max_wind_speed",
+    y = "Número de casos"
+)
+
+wankara %>% ggplot(aes(x=Wind_speed, y=Mean_temperature)) + geom_point() + labs(
+    title = "Diagrama de dispersión de las variables Max_wind_speed y Mean_Temperature"
+)
 
 # Test de shafiro para ver si la variable Max_wind_speed sigue una distribución normal
 # Como el p-value que se obtiene (< 2.2e-16) es menor que 0.05, se puede afirmar que la variable Max_wind_speed no sigue una distribución normal
@@ -404,6 +477,46 @@ qqnorm(wankara$Max_wind_speed)
 qqline(wankara$Max_wind_speed)
 
 
+# Variable Mean_temperature Variable numérica discreta. Variable a predecir
+
+## Se obtiene el min, mediana, media, maximo y los cuartiles, además el IQR
+summary(wankara$Mean_temperature)
+IQR(wankara$Mean_temperature)
+
+## Se calcula la varianza y desviación tipica de Mean_temperature
+var(wankara$Mean_temperature)
+sd(wankara$Mean_temperature)
+
+## Se calcula la moda
+getMode(wankara$Mean_temperature)
+
+## Se renderiza un boxplot de la variable Mean_temperature
+# # Existen varios outlier. Hay que investigar si realmente lo es, porque pueden ser casos extremos debido a la temática que se está tratando, la meteorología
+wankara %>% ggplot(aes(y=Mean_temperature)) + geom_boxplot() + labs(
+    title = "Boxplot de la variable Mean_temperature"
+)
+
+## Comprobar asimetria y la forma del pico de la distribucíon
+
+skewness(wankara$Mean_temperature) # asimetrica por la derecha Se puede reducir haciendo una raiz cuadrada o logaritmo de los datos, aunque estamos trabajando con datos meteorológicos
+kurtosis(wankara$Mean_temperature) # El pico de la distribución es más alto que el de una distribución normal
+
+## Con el grafico se puede ver que es asimetrica por la derecha,
+## y que el pico de la distribución es más alto que el pico de una distribución normal
+wankara %>% ggplot(aes(x=Mean_temperature)) + geom_histogram(bins = 30) + labs(
+    title = "Histograma de la variable Mean_temperature",
+    y = "Número de casos"
+)
+
+# Test de shafiro para ver si la variable Mean_temperature sigue una distribución normal
+# Como el p-value que se obtiene (< 2.2e-16) es menor que 0.05, se puede afirmar que la variable Mean_temperature no sigue una distribución normal
+shapiro.result <- shapiro.test(wankara$Mean_temperature)
+shapiro.result
+
+qqnorm(wankara$Mean_temperature)
+qqline(wankara$Mean_temperature)
+
+
 
 # Bivariate analysis
 
@@ -412,4 +525,29 @@ corrplot(correlation, method = "number")
 
 wankara %>% pairs(.)
 
+wankara %>% ggplot(aes(x=Visibility, y=Precipitation)) + geom_point() + labs(
+    title = "Diagrama de dispersión de las variables Visibility y Precipitation"
+)
 
+wankara %>% ggplot(aes(x=Standard_pressure, y=Precipitation)) + geom_point() + labs(
+    title = "Diagrama de dispersión de las variables Standard_pressure y Precipitation"
+)
+
+wankara %>% ggplot(aes(x=Sea_level_pressure, y=Precipitation)) + geom_point() + labs(
+    title = "Diagrama de dispersión de las variables Sea_level_pressure y Precipitation"
+)
+
+wankara %>% ggplot(aes(x=Standard_pressure, y=Max_wind_speed)) + geom_point() + labs(
+    title = "Diagrama de dispersión de las variables Standard_pressure y Max_wind_speed"
+)
+
+wankara %>% ggplot(aes(x=Sea_level_pressure, y=Max_wind_speed)) + geom_point() + labs(
+    title = "Diagrama de dispersión de las variables Sea_level_pressure y Max_wind_speed"
+)
+
+wankara %>% mutate(
+    fog_can_appear=Min_temperature <= Dewpoint
+) %>% ggplot(aes(x=Visibility, color=fog_can_appear)) + geom_histogram() + facet_wrap(~ fog_can_appear) + labs(
+    title = "Variación de la visibilidad respecto a la posible aparición de niebla",
+    y = "Número de casos"
+)
