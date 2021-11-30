@@ -147,6 +147,70 @@ knnMSEtest<-mean(
     )
 )
 
+regr_test <- read.csv('regr_test_alumnos.csv', row.names = 1)
+
+# utilizar mse del k-fold
+regr_test["wankara", ]$out_test_lm <- lmMSEtest
+regr_test["wankara", ]$out_test_kknn <- knnMSEtest
+
+# Normalizar tabla ya que wilcoxon falla para valores == 0
+
+diffs <- (regr_test[, 1] - regr_test[, 2]) / regr_test[, 1]
+
+wilcox_normalized_data <- cbind(
+    ifelse(diffs < 0, abs(diffs) + 0.1, 0.1),
+    ifelse(diffs > 0, abs(diffs) + 0.1, 0.1)
+)
+
+wilcox.result <- wilcox.test(
+    wilcox_normalized_data[, 1],
+    wilcox_normalized_data[, 2],
+    alternative = "two.sided",
+    paired = T
+)
+
+wilcox.result
+
+friedman.result <- friedman.test(as.matrix(regr_test))
+friedman.result
+
+tam <- dim(regr_test)
+groups <- rep(1:tam[2], each=tam[1])
+post.hoc <- pairwise.wilcox.test(as.matrix(regr_test), groups, p.adjust = "holm", paired = TRUE)
+post.hoc
 
 
+# train errors
+
+regr_train <- read.csv('regr_train_alumnos.csv', row.names = 1)
+
+# utilizar mse del k-fold
+regr_train["wankara", ]$out_train_lm <- lmMSEtrain
+regr_train["wankara", ]$out_train_kknn <- knnMSEtrain
+
+# Normalizar tabla ya que wilcoxon falla para valores == 0
+
+diffs_train <- (regr_train[, 1] - regr_train[, 2]) / regr_train[, 1]
+
+wilcox_normalized_data_train <- cbind(
+    ifelse(diffs_train < 0, abs(diffs_train) + 0.1, 0.1),
+    ifelse(diffs_train > 0, abs(diffs_train) + 0.1, 0.1)
+)
+
+wilcox.result.train <- wilcox.test(
+    wilcox_normalized_data_train[, 1],
+    wilcox_normalized_data_train[, 2],
+    alternative = "two.sided",
+    paired = T
+)
+
+wilcox.result.train
+
+friedman.result.train <- friedman.test(as.matrix(regr_train))
+friedman.result.train
+
+tam <- dim(regr_train)
+groups <- rep(1:tam[2], each=tam[1])
+post.hoc <- pairwise.wilcox.test(as.matrix(regr_train), groups, p.adjust = "holm", paired = TRUE)
+post.hoc
 
