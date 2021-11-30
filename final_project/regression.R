@@ -105,7 +105,7 @@ lmMSEtest <- mean(
     )
 )
 
-run_knn_fold <- function(i, x, tt = "test") {
+run_kknn_fold <- function(i, x, tt = "test") {
     x_tra <- read.keel(paste(x, "-5-", i, "tra.dat", sep=""))
     x_tra <- x_tra %>% mutate(output=as.numeric(output))
     
@@ -132,7 +132,7 @@ run_knn_fold <- function(i, x, tt = "test") {
 knnMSEtrain <- mean(
     sapply(
         1:5,
-        run_knn_fold,
+        run_kknn_fold,
         nombre,
         "train"
     )
@@ -141,7 +141,7 @@ knnMSEtrain <- mean(
 knnMSEtest<-mean(
     sapply(
         1:5,
-        run_knn_fold,
+        run_kknn_fold,
         nombre,
         "test"
     )
