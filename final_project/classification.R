@@ -10,22 +10,12 @@ if(!requireNamespace("ggplot2", quietly = T)) {
     install.packages("ggplot2")
 }
 
+
 library("philentropy")
 library("tidyverse")
 library("ggplot2")
 
-getMode <- function (v) {
-    uniqueValues <- unique(v)
-    as.vector(
-        uniqueValues[
-            which.max(
-                tabulate(
-                    match(v, uniqueValues)
-                )
-            )
-        ]
-    )
-}
+source("utils.R")
 
 my_knn <- function (train, train_labels, test=NULL, k=1, metric="euclidean") {
     if (k <= 0) {
@@ -117,55 +107,67 @@ my_knn <- function (train, train_labels, test=NULL, k=1, metric="euclidean") {
 
 nombre <- "tae/tae"
 
-run_kknn_fold <- function(i, x, k, tt = "test") {
+run_knn_fold <- function(i, x, k, tt = "test") {
     x_tra <- read.keel(
         paste(x, "-10-", i, "tra.dat", sep="")
     ) %>% mutate_if(
         is.character, as.integer
-    ) %>% mutate(
-        Native=factor(Native, levels = c(1, 2), labels = c("yes", "no")),
-        Instructor=as.factor(Instructor),
-        Course=as.factor(Course),
-        Semester=factor(Semester, levels = c(1, 2), labels = c("summer", "regular")),
-        Class=factor(Class, levels = c(1, 2, 3), labels = c("low", "medium", "high"))
     )
     
     if (tt == "train") {
         #train dataset as test
-        test <- x_tra %>% select(-Class)
+        test <- x_tra
     } else {
         # test dataset as test. To avoid reading the test file without using it,
         # we are moving it to the logic in which we check if it is going to be used
-        test <-read.keel(
+        test <- read.keel(
             paste(x, "-10-", i, "tst.dat", sep="")
         ) %>% mutate_if(
             is.character, as.integer
-        ) %>% mutate(
-            Native=factor(Native, levels = c(1, 2), labels = c("yes", "no")),
-            Instructor=as.factor(Instructor),
-            Course=as.factor(Course),
-            Semester=factor(Semester, levels = c(1, 2), labels = c("summer", "regular")),
-            Class=factor(Class, levels = c(1, 2, 3), labels = c("low", "medium", "high"))
-        )    
+        )
     }
     
     yprime <- my_knn(x_tra %>% select(-Class), x_tra$Class, test %>% select(-Class), k=k)
     
-    sum(abs(test$Class-yprime)^2)/length(yprime)
+    mean(test$Class == yprime)
 }
 
-euclideanResults <- NULL
-manhattanResults <- NULL
+trainF1 <- sapply(
+    seq(1, 11, 2),
+    function (k) {
+        mean(
+            sapply(
+                1:10,
+                run_knn_fold,
+                nombre,
+                k,
+                "train"
+            )
+        )
+    }
+)
 
-for (k in seq(1, 21, 2)) {
-    euclideanPred <- my_knn(x_train, y_train, x_test, k, metric = "euclidean")
-    manhattanPred <- my_knn(x_train, y_train, x_test, k, metric = "manhattan")
-    
-    euclideanResults <- c(euclideanResults, mean(euclideanPred == y_test))
-    manhattanResults <- c(manhattanResults, mean(manhattanPred == y_test))
-}
+testF1 <- sapply(
+    seq(1, 11, 2),
+    function (k) {
+        mean(
+            sapply(
+                1:10,
+                run_knn_fold,
+                nombre,
+                k,
+                "test"
+            )
+        )
+    }
+)
 
-resultMatrix <- as.data.frame(cbind(euclideanResults, manhattanResults))
-resultMatrix <- resultMatrix %>% mutate(k = seq(1, 21, 2)) %>% rename(euclidean=euclideanResults, manhattan=manhattanResults)
 
-resultMatrix %>% gather(method, accuracy, 1:2) %>% ggplot(aes(y=accuracy, x=k)) + geom_col() + facet_wrap(~ method) + scale_x_continuous(breaks = seq(1, 21, 2))
+# resultMatrix <- as.data.frame(cbind(euclideanResults, manhattanResults))
+# resultMatrix <- resultMatrix %>% mutate(k = seq(1, 21, 2)) %>% rename(euclidean=euclideanResults, manhattan=manhattanResults)
+# 
+# resultMatrix %>% gather(method, accuracy, 1:2) %>% ggplot(aes(y=accuracy, x=k)) + geom_col() + facet_wrap(~ method) + scale_x_continuous(breaks = seq(1, 21, 2))
+
+
+
+

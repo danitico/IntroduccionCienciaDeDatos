@@ -59,6 +59,17 @@ fit7 <- lm(Mean_temperature~.-Precipitation, data=wankara)
 summary(fit7)
 sqrt(sum(fit7$residuals^2)/(length(fit7$residuals)-2))
 
+fit8 <- lm(Mean_temperature~.+I(Max_temperature*Sea_level_pressure)-Precipitation, data=wankara)
+summary(fit8)
+sqrt(sum(fit8$residuals^2)/(length(fit8$residuals)-2))
+
+fit9 <- lm(Mean_temperature~.-Precipitation+I(Max_temperature*Sea_level_pressure)+I(Max_temperature^2 * Sea_level_pressure)+I(Max_temperature^2), data=wankara)
+summary(fit9)
+sqrt(sum(fit9$residuals^2)/(length(fit9$residuals)-2))
+
+fit10 <- lm(Mean_temperature~.-Precipitation+I(Max_temperature*Sea_level_pressure)+I(Max_temperature^2 * Sea_level_pressure)+I(Max_temperature^2)+I(Max_temperature^3), data=wankara)
+summary(fit10)
+sqrt(sum(fit10$residuals^2)/(length(fit10$residuals)-2))
 
 # ------------------------------------------------
 
@@ -80,7 +91,10 @@ run_lm_fold <- function(i, x, tt = "test") {
         )    
     }
 
-    fitMulti <- lm(output~., data=x_tra)
+    fitMulti <- lm(
+        output~.-att3+I(att0*att4)+I(att0^2 * att4)+I(att0^2)+I(att0^3),
+        data=x_tra
+    )
 
     yprime <- predict(fitMulti, test)
 
