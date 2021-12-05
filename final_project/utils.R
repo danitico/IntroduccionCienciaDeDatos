@@ -134,23 +134,3 @@ getMode <- function(v) {
     uniqv <- unique(v)
     uniqv[which.max(tabulate(match(v, uniqv)))]
 }
-
-# getF1Score <- function(pred_y, real_y) {
-#     confusion_matrix <- as.matrix(confusionMatrix(pred_y, real_y))
-#     
-#     number_instances <- sum(confusion_matrix)
-#     number_classes <- nrow(confusion_matrix)
-#     rowsums <- apply(confusion_matrix, 1, sum)
-#     colsums <- apply(confusion_matrix, 2, sum)
-#     diagonal <- diag(confusion_matrix)
-#     
-#     precision <- diagonal / colsums
-#     print(precision)
-#     recall <- diagonal / rowsums
-#     print(recall)
-#     f1 <- (2 * precision * recall) / (precision + recall)
-#     
-#     mean(f1)
-# }
-
-

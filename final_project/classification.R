@@ -133,8 +133,8 @@ my_knn <- function (train, train_labels, test=NULL, k=1, metric="euclidean") {
     response
 }
 
+# KNN
 nombre <- "tae/tae"
-
 run_knn_fold <- function(i, x, k, tt = "test") {
     x_tra <- read.keel(
         paste(x, "-10-", i, "tra.dat", sep="")
@@ -209,6 +209,7 @@ results <- data.frame(cbind(1:15, knntrainAccuracy, knntestAccuracy))
 colnames(results) <- c("k", "training", "test")
 results
 
+# Gráfico con la evolución del CCR en knn con distintas k
 results %>% gather(
     `Conjunto de datos`, accuracy, 2:3
 ) %>% ggplot(
@@ -219,6 +220,7 @@ results %>% gather(
 ) + scale_x_continuous(breaks = seq(1, 15, 2))
 
 
+# Comprobando asunciones de LDA y QDA
 class1 <- originalTae %>% filter(Class == 1) %>% dplyr::select(-Class)
 class2 <- originalTae %>% filter(Class == 2) %>% dplyr::select(-Class)
 class3 <- originalTae %>% filter(Class == 3) %>% dplyr::select(-Class)
@@ -230,6 +232,7 @@ shapiro.test(class3$Size)
 leveneTest(Size ~ factor(Class), originalTae)
 
 
+# LDA
 run_lda_fold <- function(i, x, tt = "test") {
     x_tra <- read.keel(
         paste(x, "-10-", i, "tra.dat", sep="")
@@ -287,6 +290,8 @@ ldaCCRtestFolds <- sapply(
 
 ldaCCRtestmean <- mean(ldaCCRtestFolds)
 
+
+# QDA
 run_qda_fold <- function(i, x, tt = "test") {
     x_tra <- read.keel(
         paste(x, "-10-", i, "tra.dat", sep="")
@@ -344,6 +349,7 @@ qdaCCRtestFolds <- sapply(
 
 qdaCCRtestmean <- mean(qdaCCRtestFolds)
 
+# CCR train
 
 clasif_train <- read.csv('clasif_train_alumnos.csv', row.names = 1)
 
@@ -353,6 +359,8 @@ clasif_train["tae", ]$out_train_qda <- qdaCCRtrainmean
 
 friedman.result.train <- friedman.test(as.matrix(clasif_train))
 friedman.result.train
+
+# CCR test
 
 clasif_test <- read.csv('clasif_test_alumnos.csv', row.names = 1)
 
