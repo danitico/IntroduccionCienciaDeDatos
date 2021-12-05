@@ -165,7 +165,7 @@ knnMSEtestFolds <- sapply(
 
 knnMSEtest <- mean(knnMSEtestFolds)
 
-# Test estadísticos para los resultados de test
+# Test estadisticos para los resultados de test
 # Obtener los mse para lm pero utilizando todas las variables
 lmAllVariablesTest <- mean(
     sapply(
@@ -210,7 +210,7 @@ post.hoc <- pairwise.wilcox.test(as.matrix(regr_test), groups, p.adjust = "holm"
 post.hoc
 
 
-# Test estadísticos para train
+# Test estadisticos para train
 lmAllVariablesTrain <- mean(
     sapply(
         1:5,

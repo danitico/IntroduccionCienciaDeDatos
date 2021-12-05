@@ -209,13 +209,13 @@ results <- data.frame(cbind(1:15, knntrainAccuracy, knntestAccuracy))
 colnames(results) <- c("k", "training", "test")
 results
 
-# Gráfico con la evolución del CCR en knn con distintas k
+# Grafico con la evolucion del CCR en knn con distintas k
 results %>% gather(
     `Conjunto de datos`, accuracy, 2:3
 ) %>% ggplot(
     aes(x=k, y=accuracy, color=`Conjunto de datos`)
 ) + geom_line() + labs(
-    title = "Evolución de la precisión de training y test",
+    title = "Evolucion de la precision de training y test",
     y = "Tasa de acierto"
 ) + scale_x_continuous(breaks = seq(1, 15, 2))
 
