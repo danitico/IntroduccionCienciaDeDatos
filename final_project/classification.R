@@ -10,12 +10,40 @@ if(!requireNamespace("ggplot2", quietly = T)) {
     install.packages("ggplot2")
 }
 
+if(!requireNamespace("car", quietly = T)) {
+    install.packages("car")
+}
+
+if(!requireNamespace("caret", quietly = T)) {
+    install.packages("caret")
+}
+
+if(!requireNamespace("MASS", quietly = T)) {
+    install.packages("MASS")
+}
+
 
 library("philentropy")
 library("tidyverse")
 library("ggplot2")
+library("car")
+library("caret")
+library("MASS")
 
 source("utils.R")
+
+originalTae <- read.keel(
+    "tae/tae.dat"
+) %>% mutate_if(
+    is.character, as.integer
+) %>% mutate(
+    Native=factor(Native, levels = c(1, 2), labels = c("yes", "no")),
+    Instructor=as.factor(Instructor),
+    Course=as.factor(Course),
+    Semester=factor(Semester, levels = c(1, 2), labels = c("summer", "regular")),
+)
+
+universalDummy <- dummyVars(~., data=originalTae)
 
 my_knn <- function (train, train_labels, test=NULL, k=1, metric="euclidean") {
     if (k <= 0) {
@@ -112,7 +140,14 @@ run_knn_fold <- function(i, x, k, tt = "test") {
         paste(x, "-10-", i, "tra.dat", sep="")
     ) %>% mutate_if(
         is.character, as.integer
+    ) %>% mutate(
+        Native=factor(Native, levels = c(1, 2), labels = c("yes", "no")),
+        Instructor=as.factor(Instructor),
+        Course=as.factor(Course),
+        Semester=factor(Semester, levels = c(1, 2), labels = c("summer", "regular")),
     )
+    
+    x_tra <- as.data.frame(predict(universalDummy, newdata = x_tra))
     
     if (tt == "train") {
         #train dataset as test
@@ -124,16 +159,24 @@ run_knn_fold <- function(i, x, k, tt = "test") {
             paste(x, "-10-", i, "tst.dat", sep="")
         ) %>% mutate_if(
             is.character, as.integer
+        ) %>% mutate(
+            Native=factor(Native, levels = c(1, 2), labels = c("yes", "no")),
+            Instructor=as.factor(Instructor),
+            Course=as.factor(Course),
+            Semester=factor(Semester, levels = c(1, 2), labels = c("summer", "regular")),
         )
+        
+        test <- as.data.frame(predict(universalDummy, newdata = test))
     }
     
-    yprime <- my_knn(x_tra %>% select(-Class), x_tra$Class, test %>% select(-Class), k=k)
+    yprime <- my_knn(x_tra %>% dplyr::select(-Class), x_tra$Class, test %>% dplyr::select(-Class), k=k)
     
     mean(test$Class == yprime)
 }
 
-trainF1 <- sapply(
-    seq(1, 11, 2),
+
+knntrainAccuracy <- sapply(
+    1:15,
     function (k) {
         mean(
             sapply(
@@ -147,8 +190,8 @@ trainF1 <- sapply(
     }
 )
 
-testF1 <- sapply(
-    seq(1, 11, 2),
+knntestAccuracy <- sapply(
+    1:15,
     function (k) {
         mean(
             sapply(
@@ -162,12 +205,160 @@ testF1 <- sapply(
     }
 )
 
+results <- data.frame(cbind(1:15, knntrainAccuracy, knntestAccuracy))
+colnames(results) <- c("k", "training", "test")
+results
 
-# resultMatrix <- as.data.frame(cbind(euclideanResults, manhattanResults))
-# resultMatrix <- resultMatrix %>% mutate(k = seq(1, 21, 2)) %>% rename(euclidean=euclideanResults, manhattan=manhattanResults)
-# 
-# resultMatrix %>% gather(method, accuracy, 1:2) %>% ggplot(aes(y=accuracy, x=k)) + geom_col() + facet_wrap(~ method) + scale_x_continuous(breaks = seq(1, 21, 2))
+results %>% gather(
+    `Conjunto de datos`, accuracy, 2:3
+) %>% ggplot(
+    aes(x=k, y=accuracy, color=`Conjunto de datos`)
+) + geom_line() + labs(
+    title = "Evolución de la precisión de training y test",
+    y = "Tasa de acierto"
+) + scale_x_continuous(breaks = seq(1, 15, 2))
 
 
+class1 <- originalTae %>% filter(Class == 1) %>% dplyr::select(-Class)
+class2 <- originalTae %>% filter(Class == 2) %>% dplyr::select(-Class)
+class3 <- originalTae %>% filter(Class == 3) %>% dplyr::select(-Class)
+
+shapiro.test(class1$Size)
+shapiro.test(class2$Size)
+shapiro.test(class3$Size)
+
+leveneTest(Size ~ factor(Class), originalTae)
 
 
+run_lda_fold <- function(i, x, tt = "test") {
+    x_tra <- read.keel(
+        paste(x, "-10-", i, "tra.dat", sep="")
+    ) %>% mutate_if(
+        is.character, as.integer
+    ) %>% mutate(
+        Native=factor(Native, levels = c(1, 2), labels = c("yes", "no")),
+        Instructor=as.factor(Instructor),
+        Course=as.factor(Course),
+        Semester=factor(Semester, levels = c(1, 2), labels = c("summer", "regular")),
+        Class=factor(Class)
+    )
+    
+    if (tt == "train") {
+        #train dataset as test
+        test <- x_tra
+    } else {
+        # test dataset as test. To avoid reading the test file without using it,
+        # we are moving it to the logic in which we check if it is going to be used
+        test <- read.keel(
+            paste(x, "-10-", i, "tst.dat", sep="")
+        ) %>% mutate_if(
+            is.character, as.integer
+        ) %>% mutate(
+            Native=factor(Native, levels = c(1, 2), labels = c("yes", "no")),
+            Instructor=as.factor(Instructor),
+            Course=as.factor(Course),
+            Semester=factor(Semester, levels = c(1, 2), labels = c("summer", "regular")),
+            Class=factor(Class)
+        )
+    }
+    
+    lda.fit <- lda(Class ~ Size, data=x_tra)
+    
+    yprime <- predict(lda.fit, test)$class
+
+    mean(test$Class == yprime)
+}
+
+ldaCCRtrainFolds <- sapply(
+    1:10,
+    run_lda_fold,
+    nombre,
+    "train"
+)
+
+ldaCCRtrainmean <- mean(ldaCCRtrainFolds)
+
+ldaCCRtestFolds <- sapply(
+    1:10,
+    run_lda_fold,
+    nombre,
+    "test"
+)
+
+ldaCCRtestmean <- mean(ldaCCRtestFolds)
+
+run_qda_fold <- function(i, x, tt = "test") {
+    x_tra <- read.keel(
+        paste(x, "-10-", i, "tra.dat", sep="")
+    ) %>% mutate_if(
+        is.character, as.integer
+    ) %>% mutate(
+        Native=factor(Native, levels = c(1, 2), labels = c("yes", "no")),
+        Instructor=as.factor(Instructor),
+        Course=as.factor(Course),
+        Semester=factor(Semester, levels = c(1, 2), labels = c("summer", "regular")),
+        Class=factor(Class)
+    )
+    
+    if (tt == "train") {
+        #train dataset as test
+        test <- x_tra
+    } else {
+        # test dataset as test. To avoid reading the test file without using it,
+        # we are moving it to the logic in which we check if it is going to be used
+        test <- read.keel(
+            paste(x, "-10-", i, "tst.dat", sep="")
+        ) %>% mutate_if(
+            is.character, as.integer
+        ) %>% mutate(
+            Native=factor(Native, levels = c(1, 2), labels = c("yes", "no")),
+            Instructor=as.factor(Instructor),
+            Course=as.factor(Course),
+            Semester=factor(Semester, levels = c(1, 2), labels = c("summer", "regular")),
+            Class=factor(Class)
+        )
+    }
+    
+    qda.fit <- qda(Class ~ Size, data=x_tra)
+    
+    yprime <- predict(qda.fit, test)$class
+    
+    mean(test$Class == yprime)
+}
+
+qdaCCRtrainFolds <- sapply(
+    1:10,
+    run_qda_fold,
+    nombre,
+    "train"
+)
+
+qdaCCRtrainmean <- mean(qdaCCRtrainFolds)
+
+qdaCCRtestFolds <- sapply(
+    1:10,
+    run_qda_fold,
+    nombre,
+    "test"
+)
+
+qdaCCRtestmean <- mean(qdaCCRtestFolds)
+
+
+clasif_train <- read.csv('clasif_train_alumnos.csv', row.names = 1)
+
+clasif_train["tae", ]$out_train_knn <- knntrainAccuracy[1]
+clasif_train["tae", ]$out_train_lda <- ldaCCRtrainmean
+clasif_train["tae", ]$out_train_qda <- qdaCCRtrainmean
+
+friedman.result.train <- friedman.test(as.matrix(clasif_train))
+friedman.result.train
+
+clasif_test <- read.csv('clasif_test_alumnos.csv', row.names = 1)
+
+clasif_test["tae", ]$out_test_knn <- knntestAccuracy[1]
+clasif_test["tae", ]$out_test_lda <- ldaCCRtestmean
+clasif_test["tae", ]$out_test_qda <- qdaCCRtestmean
+
+friedman.result.train <- friedman.test(as.matrix(clasif_test))
+friedman.result.train

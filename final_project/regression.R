@@ -74,7 +74,7 @@ sqrt(sum(fit10$residuals^2)/(length(fit10$residuals)-2))
 # ------------------------------------------------
 
 nombre <- "wankara/wankara"
-run_lm_fold <- function(i, x, tt = "test") {
+run_lm_fold <- function(i, x, tt = "test", all_variables=F) {
     x_tra <- read.keel(paste(x, "-5-", i, "tra.dat", sep=""))
     x_tra <- x_tra %>% mutate(output=as.numeric(output))
     
@@ -90,34 +90,38 @@ run_lm_fold <- function(i, x, tt = "test") {
             output=as.numeric(output)
         )    
     }
-
-    fitMulti <- lm(
-        output~.-att3+I(att0*att4)+I(att0^2 * att4)+I(att0^2)+I(att0^3),
-        data=x_tra
-    )
+    
+    if (all_variables) {
+        fitMulti <- lm(output~., data=x_tra)
+    } else {
+        fitMulti <- lm(
+            output~.-att3+I(att0*att4)+I(att0^2 * att4)+I(att0^2)+I(att0^3),
+            data=x_tra
+        )        
+    }
 
     yprime <- predict(fitMulti, test)
 
     sum(abs(test$output-yprime)^2)/length(yprime)
 }
 
-lmMSEtrain <- mean(
-    sapply(
-        1:5,
-        run_lm_fold,
-        nombre,
-        "train"
-    )
+lmMSEtrainFolds <- sapply(
+    1:5,
+    run_lm_fold,
+    nombre,
+    "train"
 )
 
-lmMSEtest <- mean(
-    sapply(
-        1:5,
-        run_lm_fold,
-        nombre,
-        "test"
-    )
+lmMSEtrain <- mean(lmMSEtrainFolds)
+
+lmMSEtestFolds <- sapply(
+    1:5,
+    run_lm_fold,
+    nombre,
+    "test"
 )
+
+lmMSEtest <- mean(lmMSEtestFolds)
 
 run_kknn_fold <- function(i, x, tt = "test") {
     x_tra <- read.keel(paste(x, "-5-", i, "tra.dat", sep=""))
@@ -143,28 +147,40 @@ run_kknn_fold <- function(i, x, tt = "test") {
     sum(abs(test$output-yprime)^2)/length(yprime)
 }
 
-knnMSEtrain <- mean(
-    sapply(
-        1:5,
-        run_kknn_fold,
-        nombre,
-        "train"
-    )
+knnMSEtrainFolds <- sapply(
+    1:5,
+    run_kknn_fold,
+    nombre,
+    "train"
 )
 
-knnMSEtest<-mean(
+knnMSEtrain <- mean(knnMSEtrainFolds)
+
+knnMSEtestFolds <- sapply(
+    1:5,
+    run_kknn_fold,
+    nombre,
+    "test"
+)
+
+knnMSEtest <- mean(knnMSEtestFolds)
+
+# Test estadísticos para los resultados de test
+# Obtener los mse para lm pero utilizando todas las variables
+lmAllVariablesTest <- mean(
     sapply(
         1:5,
-        run_kknn_fold,
+        run_lm_fold,
         nombre,
-        "test"
+        "test",
+        T
     )
 )
 
 regr_test <- read.csv('regr_test_alumnos.csv', row.names = 1)
 
 # utilizar mse del k-fold
-regr_test["wankara", ]$out_test_lm <- lmMSEtest
+regr_test["wankara", ]$out_test_lm <- lmAllVariablesTest
 regr_test["wankara", ]$out_test_kknn <- knnMSEtest
 
 # Normalizar tabla ya que wilcoxon falla para valores == 0
@@ -194,12 +210,21 @@ post.hoc <- pairwise.wilcox.test(as.matrix(regr_test), groups, p.adjust = "holm"
 post.hoc
 
 
-# train errors
+# Test estadísticos para train
+lmAllVariablesTrain <- mean(
+    sapply(
+        1:5,
+        run_lm_fold,
+        nombre,
+        "train",
+        T
+    )
+)
 
 regr_train <- read.csv('regr_train_alumnos.csv', row.names = 1)
 
 # utilizar mse del k-fold
-regr_train["wankara", ]$out_train_lm <- lmMSEtrain
+regr_train["wankara", ]$out_train_lm <- lmAllVariablesTrain
 regr_train["wankara", ]$out_train_kknn <- knnMSEtrain
 
 # Normalizar tabla ya que wilcoxon falla para valores == 0
